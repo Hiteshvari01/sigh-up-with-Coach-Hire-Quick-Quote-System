@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lead Card</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+
+  <div id="leadCardContainer" class="p-4"></div>
+
+<script>
+  function updateLeadDetails(data) {
+    // Set main info
+    document.getElementById('detailPickup').innerText = data.pickup || '-';
+    document.getElementById('detailDestination').innerText = data.destination || '-';
+    document.getElementById('detailDate').innerText = data.departureDate || '-';
+    document.getElementById('detailDepartureTime').innerText = data.departureTime || '-';
+    document.getElementById('detailReturnDate').innerText = data.returnDate || '-';
+    document.getElementById('detailReturnTime').innerText = data.returnTime || '-';
+    document.getElementById('detailPeople').innerText = data.passengers || '-';
+    document.getElementById('detailPrice').innerText = data.priceEstimate || '-';
+   document.getElementById('detailDistance').innerText = getDistanceBetween(data.pickup, data.destination);
+   document.getElementById('detailDuration').innerText = calculateDuration(data.departureDate, data.departureTime, data.returnDate, data.returnTime);
+   document.getElementById("detailName").innerText=data.name || '-';
+   document.getElementById("detailEmail").innerText=data.email || '-';
+    document.getElementById("detailPhone").innerText=data.phone || '-';
+    document.getElementById("detailId").innerText=data.id || '-';
+        document.getElementById("detailSubmitDate").innerText = data.submitDate || '-';
+// Delete lead logic
+  const deleteBtn = document.getElementById("deleteLeadBtn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => {
+      if (selectedLeadCard) {
+        if (confirm("Are you sure you want to delete this lead?")) {
+          selectedLeadCard.remove(); // remove from DOM
+
+          // Hide detail view
+          document.getElementById("mainContent").classList.remove("detail-visible");
+          document.getElementById("sidebar").classList.remove("collapsed");
+
+          selectedLeadCard = null;
+        }
+      }
+    });
+
+  }
+}
+
+  // Render lead card HTML
+  document.getElementById("leadCardContainer").innerHTML = `
+  <div class="w-full bg-white rounded-[30px] shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <button id="closeDetail" class="bg-[#F0F2F4] rounded-[100px]  w-10 p-2 ">
+        <i class="fas fa-times text-black text-sm"></i>
+      </button>
+      <div class="flex items-center gap-2 text-[#007BE5] font-medium text-base">
+        <i class="fas fa-clipboard text-[#007BE5] text-lg"></i>
+        <span>New Lead</span>
+      </div>
+      <span class="w-"></span>
+    </div>
+
+    <div class="flex gap-3">
+      <div class="flex flex-col items-center pt-1 relative">
+        <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
+        <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
+        <div class="bg-[#007BE5] rounded-full p-1">
+          <div class="bg-[#007BE5] rounded-full p-1">
+            <i class="bi bi-arrow-up text-white"></i><i class="bi bi-arrow-down text-white "></i>
+
+
+          </div>
+        </div>
+        <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
+        <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
+      </div>
+
+      <div class="flex-1">
+        <div class="flex justify-between">
+          <div>
+            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">From</p>
+            <p class="text-[22px] font-semibold leading-5"><span id="detailPickup">-</span></p>
+            <div id="modalFromStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
+          </div>
+          <div class="text-end">
+            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Depart</p>
+            <p class="text-[16px] font-semibold"><span id="detailDate">-</span></p>
+            <p class="text-[16px]" id="detailDepartureTime">-</p>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-5">
+          <div>
+            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">To</p>
+            <p class="text-[22px] font-semibold leading-5"><span id="detailDestination">-</span></p>
+            <div id="modalToStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
+          </div>
+          <div class="text-end ">
+            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Return</p>
+          <p class="text-[16px] font-semibold"><span id="detailReturnDate">-</span></p>
+            <p class="text-[16px]" id="detailReturnTime">-</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-[#D3D9DF] my-4"></div>
+
+    <div class="flex justify-between text-sm">
+      <div>
+        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Passengers</p>
+        <p class="text-[20px] font-semibold"><span id="detailPeople">-</span></p>
+      </div>
+      <div>
+        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Total Distance</p>
+        <p class="text-[20px] font-semibold"><span id="detailDistance">-</span></p>
+      </div>
+      <div>
+        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Duration</p>
+        <p class="text-[20px] font-semibold"><span id="detailDuration">-</span></p>
+      </div>
+       
+
+    </div>
+   <div class="flex justify-between text-sm bg-[#e7f0fe] p-1 rounded-lg">
+       <p class="m-2 p-2 text-[#6D7178] uppercase font-medium text-[12px]">Price Ectimate</p>
+       <p class="bg-white rounded-lg m-2 p-2 text-black uppercase font-medium text-[12px]"id="detailPrice">-</p>
+    </div><br>
+     <div class="p-4 bg-[#f1f3f6] rounded-lg">
+      <h6> Additional information</h6>
+        <p class="text-sm">We’re looking for a comfortable and reliable vehicle for the journey, ideally with air conditioning and storage space for bags. Please also let us know about any additional costs, such as tolls or parking fees.</p>
+        <p>Damien <span class="text-xs">12:30</span></p>  
+      
+      <p class="text-sm text-[#7a7c81]">Could you please confirm if you’ll need a child seat, wheelchair access, or any special accommodations on board? Also, will there be any large luggage or equipment we should plan space for?
+        </p>
+      
+      <button class="btn btn-outline-primary d-flex align-items-center gap-1 rounded-pill px-3 py-2">
+<i class="fa-regular fa-comment" style="font-size: 18px;"></i><span class="d-none d-sm-inline">Send a message</span>
+      </button>
+
+      </div>
+     <div class="p-4  rounded-lg">
+         <h6><strong>Customer</strong></h6>
+          <p>Name :    <span><strong><span id="detailName">-</span></strong></span </p>
+           <p >Email :    <a  href="#" class="no-underline" ><strong><span id="detailEmail">-</span></strong></a> </p>
+           <p >Phone :    <a  href="#" class="no-underline" ><strong><span id="detailPhone">-</span></strong></a> </p>
+           
+      <br>
+      <div class="flex-1 ">
+        <div class="flex justify-between bg-[#f0f2f4] p-3 rounded-lg">
+          <div>
+            <p class="text-[12px] text-[#6D7178] font-medium  mb-1">Lead ID</p>
+            <p class="text-[8px] text-[#2e3032] font-semibold leading-5"><span id="detailId">-</span></p>
+            <div id="modalFromStops" class="text-[14px] text-[#2e3032] mt-1"></div>
+          </div>
+          <div>
+            <p class="text-[12px] text-[#6D7178] font-medium  mb-1">Submitted On</p>
+            <p class="text-[12px] text-[#2e3032] font-semibold leading-5"><span id="detailSubmitDate">-</span></p>
+            <div id="deleteLeadBtn" id="modalFromStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
+          </div>
+          <div class=" text-end">
+           <button id="deleteLeadBtn" class="flex items-center gap-2 px-4 py-2 border border-[#007BE5] text-[#007BE5] rounded-full text-sm font-medium">
+        <i class="fa-solid fa-trash"></i>
+        Delete Lead
+      </button></div>
+        </div>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+
+      <button class="flex items-center gap-2 px-4 py-2 border border-[#007BE5] text-[#007BE5] rounded-full text-sm font-medium ">
+        <i class="fas fa-envelope"></i>
+        Request more information
+      </button>
+      <button class="bg-[#007BE5] p-2 rounded-[100px] w-13  text-white">
+        <i class="fas fa-briefcase"></i>
+      </button>
+    </div>
+     
+   
+    <div class="flex gap-2 mt-4">
+      <button class="bg-[#03BB3A] text-white flex-1 py-2 rounded-full font-semibold flex items-center justify-center gap-2">
+        <i class="fas fa-check"></i> Accept
+      </button>
+      <button class="bg-[#242628] text-white flex-1 py-2 rounded-full font-semibold flex items-center justify-center gap-2">
+        <i class="fas fa-times"></i> Reject
+      </button>
+    </div>
+  </div>
+  `;
+  
+  // Call updateLeadDetails with sample data to test
+ 
+</script>
+
+</body>
+</html>

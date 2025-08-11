@@ -1,0 +1,46 @@
+<nav class="navbar shadow-sm border-bottom fixed-top px-3 px-sm-4"
+     style="height: 72px; background-color: #f0f2f4; z-index: 1040; left: 227px; width: calc(100% - 227px);"
+     id="mainHeader">
+
+  <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center gap-2">
+    
+    <!-- Left: Toggle + Greeting -->
+    <div class="d-flex align-items-center gap-2 flex-grow-1 flex-shrink-1">
+      <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+      <h6 class="mb-0 fw-semibold text-truncate" style="max-width: 180px;">Welcome, Damien!</h6>
+    </div>
+
+    <!-- Right: Bell + Calendar -->
+    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+      <button class="btn p-0 border-0 bg-transparent position-relative">
+        <i class="bi bi-bell fs-5 text-dark"></i>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-white rounded-circle"></span>
+      </button>
+      <button class="btn d-flex align-items-center gap-2 px-3 py-2 rounded-5"
+              style="border: 1px solid #3366ff; color: #3366ff; font-weight: 500; font-size: 13px;">
+        <i class="bi bi-calendar-fill"></i> 
+        <span class="d-none d-sm-inline">Calendar</span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- <script>
+  // Sidebar responsive adjustment
+  function adjustHeader() {
+    const header = document.getElementById('mainHeader');
+    if (window.innerWidth < 992) {
+      header.style.left = '0';
+      header.style.width = '100%';
+    } else {
+      header.style.left = '227px';
+      header.style.width = 'calc(100% - 227px)';
+    }
+  }
+
+  window.addEventListener('load', adjustHeader);
+  window.addEventListener('resize', adjustHeader);
+</script> -->

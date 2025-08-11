@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Bootstrap Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+</head>
+<body class=" font-sans min-h-screen flex items-center justify-center">
+
+  <div class=" rounded-lg p-8 w-full max-w-sm flex flex-col items-center shadow-lg">
+    <img src="/assets/logo.png" alt="Logo" class="w-16 h-16 object-contain mb-6" />
+    <h2 class="text-2xl font-bold mb-6 text-[#0d3b66]">Welcome back!</h2>
+
+    <form method="POST" action="/1stLink" id="loginForm" class="w-full" novalidate>
+      <!-- Email -->
+      <div class="mb-5">
+        <label for="email" class="block mb-1 text-[#0d3b66] font-semibold">Email</label>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          placeholder="Enter your email"
+          required
+          class="w-full rounded-md border border-gray-400 px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0066f5]"
+          aria-describedby="emailError"
+        />
+        <p class="mt-1 text-red-600 text-sm hidden" id="emailError">Please enter a valid email address.</p>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-5">
+        <label for="password" class="block mb-1 text-[#0d3b66] font-semibold">Password</label>
+        <div class="relative">
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+            minlength="6"
+            class="w-full rounded-md border border-gray-400 px-4 py-2 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0066f5]"
+            aria-describedby="passwordError"
+          />
+          <button
+            type="button"
+            id="togglePassword"
+            class="absolute right-3 top-2.5 text-[#0066f5] hover:text-[#004bb5]"
+            aria-label="Toggle password visibility"
+          >
+            <i class="bi bi-eye-slash"></i>
+          </button>
+        </div>
+        <p class="mt-1 text-red-600 text-sm hidden" id="passwordError">
+          Password must be at least 6 characters.
+        </p>
+      </div>
+
+      <!-- Remember me -->
+      <div class="mb-6 flex items-center">
+        <input
+          type="checkbox"
+          id="remember"
+          class="h-4 w-4 text-[#0066f5] focus:ring-[#0066f5] border-gray-300 rounded"
+          checked
+        />
+        <label for="remember" class="ml-2 block text-[#0d3b66] text-sm">
+          Remember me for 2 weeks
+        </label>
+      </div>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        id="submitBtn"
+        class="w-full bg-[#0066f5] hover:bg-[#0056d6] text-white py-3 rounded-full font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        Sign In
+      </button>
+
+      <!-- Forgot password -->
+      <div class="mt-6 text-center">
+        <a href="#" class="text-[#004bb5] text-sm hover:underline">Forgot password?</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Password toggle logic
+    const togglePasswordBtn = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+
+    togglePasswordBtn.addEventListener("click", () => {
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      togglePasswordBtn.firstElementChild.classList.toggle("bi-eye");
+      togglePasswordBtn.firstElementChild.classList.toggle("bi-eye-slash");
+    });
+
+    // Form validation & enabling submit button
+    const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInputField = document.getElementById("password");
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Validate email with regex
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validateInputs() {
+      let emailValid = false;
+      let passwordValid = false;
+
+      // Email validation
+      if (emailInput.value.trim() === "" || !isValidEmail(emailInput.value.trim())) {
+        emailError.classList.remove("hidden");
+        emailInput.classList.add("border-red-500");
+        emailInput.classList.add("text-red-600");
+        emailValid = false;
+      } else {
+        emailError.classList.add("hidden");
+        emailInput.classList.remove("border-red-500");
+        emailInput.classList.remove("text-red-600");
+        emailValid = true;
+      }
+
+      // Password validation
+      if (passwordInputField.value.trim().length < 6) {
+        passwordError.classList.remove("hidden");
+        passwordInputField.classList.add("border-red-500");
+        passwordInputField.classList.add("text-red-600");
+        passwordValid = false;
+      } else {
+        passwordError.classList.add("hidden");
+        passwordInputField.classList.remove("border-red-500");
+        passwordInputField.classList.remove("text-red-600");
+        passwordValid = true;
+      }
+
+      // Enable submit button only if both valid
+      submitBtn.disabled = !(emailValid && passwordValid);
+    }
+
+    // Add input event listeners for realtime validation
+    emailInput.addEventListener("input", validateInputs);
+    passwordInputField.addEventListener("input", validateInputs);
+
+    // Final check on form submit
+    form.addEventListener("submit", (e) => {
+      validateInputs();
+      if (submitBtn.disabled) {
+        e.preventDefault();
+      }
+    });
+
+    // Initial validation to set button state on page load
+    validateInputs();
+  </script>
+</body>
+</html>

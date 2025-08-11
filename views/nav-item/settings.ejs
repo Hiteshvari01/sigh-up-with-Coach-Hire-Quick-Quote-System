@@ -1,0 +1,188 @@
+
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- css -->
+ <link rel="stylesheet" href="/css/dashboard.css">
+
+<!-- Main Content Wrapper -->
+<div class="container-fluid px-3 px-md-4 py-4" style="background-color: #f1f3f6; min-height: 100vh;">
+
+  <!-- Top: Greeting + Actions -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1 flex-shrink-1">
+      <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+  </div>
+ <div class="d-flex align-items-center justify-content-between flex-wrap  mb-4 " style="width: 100%;">
+  <h6 class="fw-semibold mb-0 text-truncate flex-grow-1" style="min-width: 0;font-size: 1.15rem;">
+    Settings
+  </h6>
+
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <button class="btn p-0 border-0 bg-transparent position-relative">
+      <span class="material-icons text-dark">notifications</span>
+      <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-white rounded-circle"></span>
+    </button>
+    <button class="btn btn-outline-primary d-flex align-items-center gap-1 rounded-pill px-2 py-1">
+      <span class="material-icons" style="font-size: 18px;">calendar_today</span>
+      <span class="d-none d-sm-inline">Calendar</span>
+    </button>
+  </div>
+</div>
+
+  
+
+
+  <!-- Heading + Search in One Row -->
+<div class="d-flex flex-row justify-content-between align-items-center mb-4 flex-nowrap">
+  <h6 class="fw-semibold text-muted mb-0 me-3">Pending leads</h6>
+  <div style="width: 200px; min-width: 150px;">
+    <div class="input-group shadow-sm rounded" style="width: 100%;">
+      <span class="input-group-text border-0 bg-transparent p-1 pe-2">
+        <span class="material-icons text-muted" style="font-size: 20px;">search</span>
+      </span>
+      <input type="text"
+             class="form-control border-0 bg-transparent shadow-none px-1"
+             placeholder="Search leads"
+             style="box-shadow: none;">
+    </div>
+  </div>
+</div>
+
+
+
+  <div class="container w-100 " >
+   
+
+    <!-- Profile Details -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Profile Details</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Name:</strong> Damien Long</p>
+        <p><strong>Email:</strong> damien.long@example.com</p>
+        <p><strong>Role:</strong> Owner</p>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card">
+      <div class="card-header">
+        <h5>Change Password</h5>
+      </div>
+      <div class="card-body">
+        <form id="passwordForm" novalidate>
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="currentPassword"
+              required
+              placeholder="Enter current password"
+            />
+            <div class="invalid-feedback">Please enter your current password.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="newPassword"
+              required
+              placeholder="Enter new password"
+              minlength="6"
+            />
+            <div class="invalid-feedback">
+              New password must be at least 6 characters.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="confirmPassword"
+              required
+              placeholder="Confirm new password"
+            />
+            <div class="invalid-feedback" id="confirmPasswordFeedback">
+              Passwords do not match.
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary rounded-pill"
+          >
+            Save Password
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('passwordForm');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    function validatePasswords() {
+      // Check new password length
+      if (newPassword.value.length < 6) {
+        newPassword.classList.add('is-invalid');
+      } else {
+        newPassword.classList.remove('is-invalid');
+      }
+
+      // Check confirm password matches new password
+      if (confirmPassword.value !== newPassword.value || confirmPassword.value === '') {
+        confirmPassword.classList.add('is-invalid');
+      } else {
+        confirmPassword.classList.remove('is-invalid');
+      }
+    }
+
+    newPassword.addEventListener('input', () => {
+      validatePasswords();
+    });
+
+    confirmPassword.addEventListener('input', () => {
+      validatePasswords();
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Trigger validation for current password
+      if (!form.currentPassword.value) {
+        form.currentPassword.classList.add('is-invalid');
+      } else {
+        form.currentPassword.classList.remove('is-invalid');
+      }
+
+      validatePasswords();
+
+      // Check all validations
+      if (
+        form.currentPassword.value &&
+        newPassword.value.length >= 6 &&
+        confirmPassword.value === newPassword.value
+      ) {
+        alert('Password changed successfully!');
+        form.reset();
+      }
+    });
+  </script>
+
+  
+  </div>
+</div>
+
+
+
+
+ 

@@ -1,0 +1,135 @@
+<style>
+  .active-nav {
+    background-color: #d3d9df;
+    border-radius: 8px;
+  }
+
+  /* Sidebar collapsed */
+  #sidebar.collapsed {
+    width: 80px !important;
+    transition: width 0.3s ease;
+  }
+
+  #sidebar.collapsed .nav-link span,
+  #sidebar.collapsed #sidebar-name {
+    display: none !important;
+  }
+
+  #sidebar.collapsed .nav-link {
+    justify-content: center;
+  }
+</style>
+
+<!-- Navigation Template -->
+<template id="nav-items-template">
+  <li class="nav-item">
+    <a href="/1stLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-house-door"></i> <span>Dashboard</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/2ndLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-receipt"></i> <span>Transactions</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/3rdLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-people"></i> <span>Users</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/4thLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-envelope"></i> <span>Email Templates</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/5thLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-archive"></i> <span>Archived Leads</span>
+    </a>
+  </li>
+</template>
+
+<!-- Mobile Sidebar -->
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebarOffcanvas" style="width: 227px;">
+  <div class="offcanvas-header d-flex align-items-center gap-2">
+    <div class="rounded-circle text-white fw-bold d-flex justify-content-center align-items-center"
+         style="width: 40px; height: 40px; font-size: 1.2rem; background-color: #074cad;">
+      D
+    </div>
+    <span class="fw-semibold" style="color: #326bba; font-size: 1.1rem;">Damien</span>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column justify-content-between">
+    <ul class="nav flex-column gap-3 nav-list-mobile"></ul>
+    <div class="pt-4 d-flex flex-column gap-3">
+      <a href="/6thLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+        <i class="bi bi-gear"></i> <span>Settings</span>
+      </a>
+      <a href="#" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+        <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Desktop Sidebar -->
+<div id="sidebar" class="d-none d-lg-flex flex-column flex-shrink-0 border-end shadow-sm position-fixed top-0 start-0"
+     style="width: 227px; height: 100vh; background-color: #f0f2f4; padding: 20px 16px 10px 16px; z-index: 1030;">
+  <!-- Profile -->
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <div class="rounded-circle text-white fw-bold d-flex justify-content-center align-items-center"
+         style="width: 40px; height: 40px; font-size: 1.2rem; background-color: #074cad;">
+      D
+    </div>
+    <span id="sidebar-name" class="fw-semibold" style="color: #326bba;">Damien</span>
+  </div>
+
+  <!-- Navigation -->
+  <ul class="nav flex-column gap-3 nav-list-desktop"></ul>
+
+  <!-- Footer -->
+  <div class="mt-auto pt-4 d-flex flex-column gap-3">
+    <a href="/6thLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-gear"></i> <span>Settings</span>
+    </a>
+    <a href="#" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+      <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
+    </a>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const template = document.getElementById("nav-items-template");
+    const navHTML = template.innerHTML;
+
+    // Inject nav items
+    document.querySelector(".nav-list-mobile").innerHTML = navHTML;
+    document.querySelector(".nav-list-desktop").innerHTML = navHTML;
+
+    const allNavLinks = document.querySelectorAll(".nav-link");
+
+    // Set active from localStorage
+    const activeHref = localStorage.getItem("activeNav");
+    if (activeHref) {
+      allNavLinks.forEach(link => {
+        if (link.getAttribute("href") === activeHref) {
+          link.classList.add("active-nav");
+        }
+      });
+    }
+
+    // Update active on click
+    allNavLinks.forEach(link => {
+      link.addEventListener("click", function () {
+        allNavLinks.forEach(l => l.classList.remove("active-nav"));
+        this.classList.add("active-nav");
+        localStorage.setItem("activeNav", this.getAttribute("href"));
+      });
+    });
+
+    // Collapse logic will be triggered from dashboard when icon is clicked
+  });
+
+  
+</script>

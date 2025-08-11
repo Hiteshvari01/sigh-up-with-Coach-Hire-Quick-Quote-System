@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
+
+  <!-- Tailwind, Material Icons, Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    body {
+      overflow-x: hidden;
+      transition: padding-left 0.5s ease;
+    }
+@media (min-width: 992px) {
+  body.dashboard-collapsed .lead-card {
+    padding: 6px 10px;
+  }
+
+  body.dashboard-collapsed .lead-info,
+  body.dashboard-collapsed .lead-meta {
+    gap: 4px;
+  }
+
+  body.dashboard-collapsed .lead-info span,
+  body.dashboard-collapsed .lead-meta span {
+    font-size: 0.85rem;
+  }
+}
+
+
+    @media (min-width: 992px) {
+      body {
+        padding-left: 227px;
+      }
+
+      body.sidebar-collapsed {
+        padding-left: 80px !important;
+      }
+
+      #sidebar.collapsed ~ #mainContent {
+        margin-left: 0 !important;
+      }
+
+      #dashboardSection {
+        width: 100%;
+      }
+
+      #detailSection {
+        width: 0;
+        overflow: hidden;
+        background-color: #fff;
+        border-left: 1px solid #ddd;
+        transition: width 0.3s ease;
+        display: block;
+      }
+
+      #detailSection.show {
+        width: 50%;
+        overflow-y: auto;
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      body {
+        padding-left: 0;
+      }
+
+      #dashboardSection,
+      #detailSection {
+        width: 100% !important;
+      }
+
+      .hide-on-mobile {
+        display: none !important;
+      }
+
+      .show-on-mobile {
+        display: block !important;
+      }
+
+      #detailSection {
+        display: none !important;
+      }
+
+      #detailSection.show-on-mobile {
+        display: block !important;
+      }
+    }
+
+    #sidebar.collapsed {
+      width: 50px !important;
+    }
+
+    #sidebar.collapsed .nav-link span,
+    #sidebar.collapsed #sidebar-name {
+      display: none !important;
+    }
+
+    #mainContent {
+      display: flex;
+      flex-wrap: nowrap;
+      transition: margin-left 0.5s ease;
+      height: 100vh;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <%- include('sidebar') %>
+
+  <!-- Main Content Wrapper -->
+  <div id="mainContent" class="transition-all">
+    <!-- Dashboard Content -->
+    <div id="dashboardSection">
+      <%- include('transactions') %>
+    </div>
+
+    <!-- Detail Panel -->
+    <div id="detailSection">
+  <%- include('leads-details') %>
+  </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Responsive Toggle Script --> 
+<script>
+  // ✅ Function 1: Get Distance Between Locations 
+  function getDistanceBetween(pickup, destination) {
+    const distances = {
+      "Skibbereen-Ballydehob": "15 km",
+      "Cork-Kinsale": "25 km",
+      "Bantry-Goleen": "40 km",
+      "Clonakilty-Bandon": "20 km",
+      "Dunmanway-Macroom": "30 km",
+      "Rosscarbery-Leap": "10 km"
+    };
+    const key = `${pickup}-${destination}`;
+    return distances[key] || "N/A";
+  }
+
+  // ✅ Helper Function: Calculate Duration From Distance (default avg speed 40 km/h)
+  function calculateDurationFromDistance(distanceKm, avgSpeedKmph = 40) {
+    if (!distanceKm || isNaN(distanceKm) || distanceKm <= 0) return "N/A";
+
+    const durationInHours = distanceKm / avgSpeedKmph;
+    const hours = Math.floor(durationInHours);
+    const minutes = Math.round((durationInHours - hours) * 60);
+
+    return `${hours}h ${minutes}min`;
+  }
+
+  // ✅ Function 2: Calculate Duration Between Departure & Return OR by Distance if date/time invalid
+  function calculateDuration(departureDate, departureTime, returnDate, returnTime, distanceStr) {
+    try {
+      console.log("Input:", { departureDate, departureTime, returnDate, returnTime, distanceStr });
+
+      const start = new Date(`${departureDate} ${departureTime}`);
+      const end = new Date(`${returnDate} ${returnTime}`);
+      const diffMs = end - start;
+
+      console.log("Start:", start);
+      console.log("End:", end);
+      console.log("diffMs:", diffMs);
+
+      if (!departureDate || !departureTime || !returnDate || !returnTime || isNaN(diffMs) || diffMs < 0) {
+        const distanceKm = parseFloat(distanceStr);
+        console.log("Invalid dates/times, calculating by distance:", distanceKm);
+        return calculateDurationFromDistance(distanceKm);
+      }
+
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${hours}h ${minutes}min`;
+    } catch (error) {
+      const distanceKm = parseFloat(distanceStr);
+      return calculateDurationFromDistance(distanceKm);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const detailSection = document.getElementById('detailSection');
+    const closeBtn = document.getElementById('closeDetail');
+    const body = document.body;
+
+    function updateBodyPadding() {
+      if (window.innerWidth >= 992) {
+        body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      } else {
+        body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    // Click listener for each lead card to open detail panel
+    const triggerCards = document.querySelectorAll('.lead-card');
+    triggerCards.forEach(card => {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        // Collect data attributes from clicked card
+        const data = {
+          submitDate: card.getAttribute('data-submitDate'),
+          id: card.getAttribute('data-id'),
+          name: card.getAttribute('data-name'),
+          email: card.getAttribute('data-email'),
+          phone: card.getAttribute('data-phone'),
+          pickup: card.getAttribute('data-pickup'),
+          destination: card.getAttribute('data-destination'),
+          date: card.getAttribute('data-date'),
+          price: card.getAttribute('data-price'),
+          people: card.getAttribute('data-people'),
+          departureDate: card.getAttribute('data-departure-date'),
+          departureTime: card.getAttribute('data-departure-time'),
+          returnDate: card.getAttribute('data-return-date'),
+          returnTime: card.getAttribute('data-return-time'),
+          passengers: card.getAttribute('data-passengers'),
+          priceEstimate: card.getAttribute('data-price-estimate'),
+          distance: card.getAttribute('data-distance'),
+          duration: card.getAttribute('data-duration'),
+        };
+
+        // Show detail panel & adjust layout based on screen size
+        if (window.innerWidth >= 992) {
+          body.classList.add('dashboard-collapsed');
+          sidebar.classList.add('collapsed');
+          dashboardSection.style.width = '50%';
+          detailSection.classList.add('show');
+        } else {
+          dashboardSection.classList.add('hide-on-mobile');
+          detailSection.classList.add('show-on-mobile'); 
+        }
+        updateBodyPadding();
+
+        // Call your updateLeadDetails function to populate the detail panel
+        updateLeadDetails(data);
+      });
+    });
+
+    // Close button logic to hide detail panel and reset layout
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        if (window.innerWidth >= 992) {
+          body.classList.remove('dashboard-collapsed');
+          sidebar.classList.remove('collapsed');
+          dashboardSection.style.width = '100%';
+          detailSection.classList.remove('show');
+        } else {
+          dashboardSection.classList.remove('hide-on-mobile');
+          detailSection.classList.remove('show-on-mobile');
+        }
+        updateBodyPadding();
+      });
+    }
+
+    window.addEventListener('resize', updateBodyPadding);
+    updateBodyPadding();
+
+    // ✅ Message form submit handler inside DOMContentLoaded with null check
+    const messageForm = document.getElementById("messageForm");
+    if (messageForm) {
+      messageForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const message = document.getElementById("messageText").value.trim();
+
+        if (message !== "") {
+          alert("Message sent: " + message);
+          const modalElement = document.getElementById('messageModal');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+          modal.hide();
+          messageForm.reset();
+        } else {
+          alert("Please enter a message.");
+        }
+      });
+    }
+  });
+</script>
+
+
+
+</body>
+</html>
