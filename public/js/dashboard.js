@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () { 
-    let selectedLeadCard = null;  // <-- yeh variable yahan define karo
+  let selectedLeadCard = null;
 
   const filterButtons = document.querySelectorAll(".filter-btn");
-  const leadRows = document.querySelectorAll(".lead-row");
+  const tabCardsContainer = document.querySelector(".tab-cards"); // <-- sirf tabs ke niche
+  const leadRows = tabCardsContainer.querySelectorAll(".lead-row"); // <-- yahan query
 
   filterButtons.forEach(button => {
     button.addEventListener("click", () => {
@@ -34,30 +35,25 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   });
-});
+  
+  const searchInput = document.querySelector('input[placeholder="Search leads"]');
+  const leadCards = document.querySelectorAll('#leadCardList .lead-card');
 
-// Example
-document.querySelectorAll('.material-icons.text-primary, .bi-chevron-right').forEach(icon => {
-  icon.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.add('collapsed');
-    document.getElementById('mainContent').classList.add('detail-visible');
-  });
+  searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
 
- // Delete button logic
-  const deleteBtn = document.getElementById("deleteLeadBtn");
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", () => {
-      if (selectedLeadCard) {
-        if (confirm("Are you sure you want to delete this lead?")) {
-          selectedLeadCard.remove();
+    leadCards.forEach(card => {
+      const pickup = card.dataset.pickup.toLowerCase();
+      const destination = card.dataset.destination.toLowerCase();
+      const name = card.dataset.name.toLowerCase();
 
-          // Hide detail view
-          document.getElementById("mainContent").classList.remove("detail-visible");
-          document.getElementById("sidebar").classList.remove("collapsed");
-
-          selectedLeadCard = null;
-        }
+      if (pickup.includes(query) || destination.includes(query) || name.includes(query)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
       }
     });
-  }
-})
+  });
+
+
+});

@@ -163,6 +163,45 @@
     <span class="material-icons text-primary">chevron_right</span>
   </div>
 </div>
+   
+<% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
+  <div class="lead-card lead-row"
+       data-id="<%= trip._id %>"
+       data-submitDate="<%= String(new Date(trip.createdAt).getDate()).padStart(2, '0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %>"
+       data-name="<%= user?.fullName || '' %>"
+       data-email="<%= user?.email || '' %>"
+       data-phone="<%= user?.phoneNumber || '' %>"
+       data-pickup="<%= trip.pickupLocation %>"
+       data-destination="<%= trip.destinationLocation %>"
+       data-date="<%= timing ? timing.departureDate + ' ' + timing.departureTime : '' %>"
+       
+       data-departure-date="<%= timing?.departureDate %>"
+       data-departure-time="<%= timing?.departureTime %>"
+       data-return-date="<%= timing?.returnDate %>"
+       data-return-time="<%= timing?.returnTime %>"
+       data-passengers="<%= trip.numberOfPeople %>"
+       data-price-estimate="€120"
+       data-from-stops='<%= JSON.stringify(goingStops.map(stop => ({ name: stop.name, duration: stop.duration }))) %>'
+       data-to-stops='<%= JSON.stringify(returnStops.map(stop => ({ name: stop.name, duration: stop.duration }))) %>'>
+    <div class="lead-info">
+      <i class="text-primary bi bi-hourglass-split"></i>
+      <span class="fw-semibold"><%= trip.pickupLocation %></span>
+      <span class="fw-semibold">
+        <span class="material-icons text-primary" style="font-size:20px;margin-right:8px; vertical-align:middle;">arrow_forward</span>
+        <%= trip.destinationLocation %>
+      </span>
+    </div>
+    <div class="lead-meta">
+      <span class="text-muted"><%= String(new Date(trip.createdAt).getDate()).padStart(2, '0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %> <%= timing?.departureTime %></span>
+      <span class="fw-medium">€120</span>
+      <span class="d-flex align-items-center gap-1">
+        <span><%= trip.passengerCount %></span>
+        <span class="material-icons">groups</span>
+      </span>
+      <span class="material-icons text-primary">chevron_right</span>
+    </div>
+  </div>
+<% }); %>
 
     </div>
   </div>
@@ -176,6 +215,7 @@
   </div>
 
   <!-- Lead Rows -->
+   <div class="tab-cards">
   <div class="d-flex flex-column gap-3">
 
    <div class="lead-card lead-row"
@@ -297,45 +337,8 @@
     <span class="material-icons text-primary">chevron_right</span>
   </div>
 </div>
-
-<% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
-  <div class="lead-card lead-row"
-       data-id="<%= trip._id %>"
-       data-submitDate="<%= String(new Date(trip.createdAt).getDate()).padStart(2, '0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %>"
-       data-name="<%= user?.fullName || '' %>"
-       data-email="<%= user?.email || '' %>"
-       data-phone="<%= user?.phoneNumber || '' %>"
-       data-pickup="<%= trip.pickupLocation %>"
-       data-destination="<%= trip.destinationLocation %>"
-       data-date="<%= timing ? timing.departureDate + ' ' + timing.departureTime : '' %>"
-       
-       data-departure-date="<%= timing?.departureDate %>"
-       data-departure-time="<%= timing?.departureTime %>"
-       data-return-date="<%= timing?.returnDate %>"
-       data-return-time="<%= timing?.returnTime %>"
-       data-passengers="<%= trip.numberOfPeople %>"
-       data-price-estimate="€120"
-       data-from-stops='<%= JSON.stringify(goingStops.map(stop => ({ name: stop.name, duration: stop.duration }))) %>'
-       data-to-stops='<%= JSON.stringify(returnStops.map(stop => ({ name: stop.name, duration: stop.duration }))) %>'>
-    <div class="lead-info">
-      <i class="text-primary bi bi-hourglass-split"></i>
-      <span class="fw-semibold"><%= trip.pickupLocation %></span>
-      <span class="fw-semibold">
-        <span class="material-icons text-primary" style="font-size:20px;margin-right:8px; vertical-align:middle;">arrow_forward</span>
-        <%= trip.destinationLocation %>
-      </span>
-    </div>
-    <div class="lead-meta">
-      <span class="text-muted"><%= String(new Date(trip.createdAt).getDate()).padStart(2, '0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %> <%= timing?.departureTime %></span>
-      <span class="fw-medium">€120</span>
-      <span class="d-flex align-items-center gap-1">
-        <span><%= trip.passengerCount %></span>
-        <span class="material-icons">groups</span>
-      </span>
-      <span class="material-icons text-primary">chevron_right</span>
-    </div>
   </div>
-<% }); %>
+
 
   </div>
 </div>

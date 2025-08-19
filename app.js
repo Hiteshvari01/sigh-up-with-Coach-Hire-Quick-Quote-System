@@ -96,15 +96,53 @@ app.get('/leads-details', async (req, res) => {
     res.status(500).send("Something went wrong");
   }
 });
-
-app.get('/2ndLink', (req, res) => {
+// Delete trip route (using backend redirect)
+app.post('/trips/:id/delete', async (req, res) => {
+  const tripId = req.params.id;
   try {
-    res.render('nav-item/2ndLink'); 
+    // Delete trip
+    await TripQuote.findByIdAndDelete(tripId);
+    // Delete related stops, timing, and user details
+    await Stop.deleteMany({ tripId });
+    await tripTiming.deleteOne({ tripId });
+    await UserDetails.deleteOne({ tripId });
+
+    // Redirect back to dashboard/1stLink
+    res.redirect('/1stLink');
   } catch (err) {
-    console.error("Error rendering /2ndLink:", err);
-    res.status(500).send("Something went wrong");
+    console.error("Error deleting trip:", err);
+    res.status(500).send("Error deleting trip");
   }
 });
+
+
+app.post('/update-lead-status/:id', async (req, res) => {
+    const leadId = req.params.id;
+    const { status } = req.body;
+
+    try {
+        await Lead.findByIdAndUpdate(leadId, { status }); // status = 'Accepted' / 'Rejected'
+        res.json({ success: true });
+    } catch(err) {
+        console.log(err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+
+
+app.get('/2ndLink', async (req, res) => {
+  try {
+    // Fetch or define your detailedTrips
+    const detailedTrips = await getDetailedTrips(); // example: get all trips
+
+    res.render('nav-item/2ndLink', { detailedTrips }); // Pass it here
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 app.get('/transactions', (req, res) => {
   try {
