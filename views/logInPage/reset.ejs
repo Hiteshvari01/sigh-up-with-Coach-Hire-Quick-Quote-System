@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -13,15 +13,46 @@
       <p class="text-red-600 text-sm mb-3"><%= error %></p>
     <% } %>
 
-    <form method="POST" action="/reset">
+    <!-- Form -->
+    <form id="resetForm" method="POST" action="/reset" novalidate>
       <label class="block text-sm font-medium mb-1">Enter your email</label>
-      <input type="email" name="email" required
-        class="w-full border rounded-md px-3 py-2 mb-4 focus:ring-2 focus:ring-[#0066f5]"/>
+      <input type="email" id="email" name="email"
+        class="w-full border rounded-md px-3 py-2 mb-2 focus:ring-2 focus:ring-[#0066f5]"/>
+      <p id="errorMsg" class="text-red-600 text-sm mb-3 hidden"></p>
+
       <button type="submit"
         class="w-full bg-[#0066f5] text-white py-2 rounded-md hover:bg-[#004bb5]">
         Continue
       </button>
     </form>
   </div>
+
+  <script>
+    document.getElementById("resetForm").addEventListener("submit", function(e) {
+      const emailInput = document.getElementById("email");
+      const errorMsg = document.getElementById("errorMsg");
+      const emailValue = emailInput.value.trim();
+
+      // Simple email regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (emailValue === "") {
+        e.preventDefault();
+        errorMsg.textContent = "Email field cannot be empty.";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      if (!emailRegex.test(emailValue)) {
+        e.preventDefault();
+        errorMsg.textContent = "Please enter a valid email address.";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      // agar sab sahi hai to error msg hide ho jayega
+      errorMsg.classList.add("hidden");
+    });
+  </script>
 </body>
 </html>
