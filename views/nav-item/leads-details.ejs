@@ -14,15 +14,46 @@
     body {
       background-color: #f2f2f2;
     }
+    @keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in 0.5s ease-out;
+}
+  
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
-
+    <!-- ✅ Alert Box -->
+<div id="toastBox" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
   <div id="leadCardContainer" class="p-4"></div>
 
 <script>
+   function showToast(message, type) {
+    const toastBox = document.getElementById("toastBox");
+
+    // Toast element create
+    const toast = document.createElement("div");
+    toast.className = "flex items-center px-3 py-2 rounded-lg shadow-md text-sm bg-white border animate-slide-in";
+    toast.innerHTML = `
+      <span class="mr-2 ${type === "success" ? "text-green-600" : "text-red-600"}">
+        ${type === "success" ? "✔️" : "❌"}
+      </span>
+      <span class="text-gray-800">${message}</span>
+    `;
+
+    // Add toast in container
+    toastBox.appendChild(toast);
+
+    // 3 sec baad remove
+    setTimeout(() => {
+      toast.classList.add("opacity-0", "transition-opacity", "duration-500");
+      setTimeout(() => toast.remove(), 500);
+    }, 3000);
+  }
   function updateLeadDetails(data) {
     // Set main info
     document.getElementById('detailPickup').innerText = data.pickup || '-';
@@ -45,6 +76,7 @@
 
   // Render lead card HTML
   document.getElementById("leadCardContainer").innerHTML = `
+  
   <div class="w-full bg-white rounded-[30px] shadow-xl p-6">
     <div class="flex items-center justify-between mb-4">
       <button id="closeDetail" class="bg-[#F0F2F4] rounded-[100px]  w-10 p-2 ">
@@ -156,14 +188,15 @@
             <div id="deleteLeadBtn" id="modalFromStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
           </div>
 
-         <% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
-  <form action="/trips/<%= trip._id %>/delete" method="POST" style="display:inline;">
+       <% if (detailedTrips && detailedTrips.length > 0) { %>
+  <form action="/trips/<%= detailedTrips[0].trip._id %>/delete" method="POST">
     <button type="submit" class="btn btn-danger">Delete</button>
   </form>
-<% }) %>
+<% } else { %>
+  <button type="submit" class="btn btn-danger">Delete</button>
+<% } %>
 
 
-          
         </div>
     </div>
     <div class="flex justify-between items-center mt-4">
@@ -176,19 +209,40 @@
         <i class="fas fa-briefcase"></i>
       </button>
     </div>
-     
-   
-    <div class="flex gap-2 mt-4">
-      <button class="bg-[#03BB3A] text-white flex-1 py-2 rounded-full font-semibold flex items-center justify-center gap-2">
-        <i class="fas fa-check"></i> Accept
+<div class=" gap-2 mt-4">
+  <% if (detailedTrips.length > 0) { %>
+    <% let tripObj = detailedTrips[0]; %> <!-- bas pehla hi trip le lo -->
+
+    <form action="/trips/<%= tripObj.trip._id %>/accept" method="POST" style="display:inline;">
+       <button type="submit" 
+        class="btn btn-success rounded-pill fw-semibold "
+        style="min-width: 200px; height: 40px; font-size: 20px;">
+        Accept
       </button>
-      <button class="bg-[#242628] text-white flex-1 py-2 rounded-full font-semibold flex items-center justify-center gap-2">
-        <i class="fas fa-times"></i> Reject
+    </form>
+
+    <form action="/trips/<%= tripObj.trip._id %>/reject" method="POST" style="display:inline;">
+     <button type="submit" 
+        class="btn btn-danger rounded-pill fw-semibold "
+        style="min-width: 200px; height: 40px; font-size: 20px;">
+        Reject
       </button>
-    </div>
-  </div>
+    </form>
+
+  <% } %>
+</div>
+
+<!-- Optional: Hover effect -->
+<style>
+  .btn:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+
+  
   `;
- 
+
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation(); // card click conflict avoid
@@ -218,7 +272,39 @@
       }
     });
   });
+// ✅ Buttons ke events
+  document.getElementById("acceptBtn").addEventListener("click", () => {
+    showToast("Lead Accepted Successfully!", "success");
+  });
 
+  document.getElementById("rejectBtn").addEventListener("click", () => {
+    showToast("Lead Rejected!", "error");
+  });
+
+document.getElementById('acceptBtn').addEventListener('click', () => updateStatus('Accepted'));
+document.getElementById('rejectBtn').addEventListener('click', () => updateStatus('Rejected'));
+
+function updateStatus(newStatus) {
+  const leadId = newStatus.dataset.leadid;
+    const status = newStatus.dataset.status;
+    
+    console.log(leadId, status); // hidden input ya data attribute
+  fetch('/update-lead-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ leadId, status: newStatus })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+    if (data.success) {
+      alert('Status updated to ' + newStatus);
+      // ✅ Dashboard me card color/status update
+      const card = document.querySelector(`.lead-card[data-id="${leadId}"]`);
+      if(card) card.querySelector('.status-span').innerText = newStatus;
+    }
+  });
+}
 </script>
 
 </body>

@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, "public")));
 async function connectDB() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
+    
     console.log("MongoDB connected");
   } catch (err) {
     console.error("MongoDB connection error:", err);
@@ -47,11 +48,69 @@ const getDetailedTrips = async () => {
   }
 };
 
-app.get("/", async (req, res) => {
+app.get("/", (req, res) => {
+  res.render("logInPage/index", { error: null });
+});
+
+
+// Login validation (for enabling button)
+app.post("/validate-login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await UserDetails.findOne({ email, password });
+  res.json({ valid: !!user });
+});
+
+
+app.post("/login", async (req, res) => { const { email, password } = req.body; const user = await UserDetails.findOne({ email, password }); 
+if (user) { 
+  res.json({ success: true });
+ } else { res.json({ 
+  success: false }); 
+} });
+
+
+
+// Render Reset Page
+app.get("/reset", (req, res) => {
+  res.render("logInPage/reset", { error: null });
+});
+
+// Handle Reset (Check email)
+// Handle Reset (Check email)
+app.post("/reset", async (req, res) => {
+  const { email } = req.body;
+
   try {
-    res.render("logInPage/index");
+    const user = await UserDetails.findOne({ email });
+    if (!user) {
+      return res.render("logInPage/reset", { error: "Email does not exist!" });
+    }
+
+    // Always send error: null to prevent EJS crash
+    res.render("logInPage/new_pass", { email, error: null });
   } catch (err) {
-    console.error("Error loading logInPage/index:", err);
+    console.error("Error in reset:", err);
+    res.status(500).send("Something went wrong");
+  }
+});
+
+// Update Password
+app.post("/update-password", async (req, res) => {
+  const { email, pass, conpass } = req.body;
+
+  try {
+    if (pass !== conpass) {
+      return res.render("logInPage/new-pass", {
+        email,
+        error: "Passwords do not match!",
+      });
+    }
+
+    await UserDetails.findOneAndUpdate({ email }, { password: pass });
+
+    res.redirect("/"); // redirect back to login
+  } catch (err) {
+    console.error("Error updating password:", err);
     res.status(500).send("Something went wrong");
   }
 });
@@ -63,23 +122,6 @@ app.get(["/1stLink","/dashboard"], async (req, res) => {
     res.render("nav-item/1stLink", { detailedTrips });
   } catch (err) {
     console.error("Error loading dashboard/1stLink:", err);
-    res.status(500).send("Something went wrong");
-  }
-});
-
-// Handle login form submission
-app.post("/1stLink", async (req, res) => {
-  try {
-    console.log("Received login POST");
-    const { email, password } = req.body;
-    console.log("Email:", email, "Password:", password);
-
-    const detailedTrips = await getDetailedTrips();
-    console.log("Fetched detailed trips, count:", detailedTrips.length);
-
-    res.render("nav-item/1stLink", { detailedTrips });
-  } catch (err) {
-    console.error("Full error:", err.stack || err);
     res.status(500).send("Something went wrong");
   }
 });
@@ -116,18 +158,6 @@ app.post('/trips/:id/delete', async (req, res) => {
 });
 
 
-app.post('/update-lead-status/:id', async (req, res) => {
-    const leadId = req.params.id;
-    const { status } = req.body;
-
-    try {
-        await Lead.findByIdAndUpdate(leadId, { status }); // status = 'Accepted' / 'Rejected'
-        res.json({ success: true });
-    } catch(err) {
-        console.log(err);
-        res.json({ success: false, error: err.message });
-    }
-});
 
 
 
@@ -224,6 +254,33 @@ app.get('/settings', (req, res) => {
     res.status(500).send("Something went wrong");
   }
 });
+
+
+// Accept trip
+app.post('/trips/:id/accept', async (req, res) => {
+  const tripId = req.params.id;
+  try {
+    await TripQuote.findByIdAndUpdate(tripId, { status: 'Accepted' });
+    res.redirect('/dashboard'); // redirect back to dashboard
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Reject trip
+app.post('/trips/:id/reject', async (req, res) => {
+  const tripId = req.params.id;
+  try {
+    await TripQuote.findByIdAndUpdate(tripId, { status: 'Rejected' });
+    res.redirect('/dashboard'); // redirect back to dashboard
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 
 
 

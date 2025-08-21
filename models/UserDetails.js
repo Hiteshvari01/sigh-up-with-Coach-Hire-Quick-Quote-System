@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const crypto = require('crypto');
 
 const userDetailsSchema = new mongoose.Schema({
   tripId: {
@@ -19,13 +20,14 @@ const userDetailsSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-  lowercase: true
+    lowercase: true,
+    unique: true
   },
   password: {
     type: String,
     required: true,
     trim: true,
-  lowercase: true
+    lowercase: true
   },
   additionalInfo: {
     type: String,
@@ -39,9 +41,17 @@ const userDetailsSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
-  whatsappSid:
-   { type: String }
-
+  whatsappSid: { 
+    type: String 
+  },
+  resetPasswordToken: { 
+    type: String 
+  },
+  resetPasswordExpires: { 
+    type: Date 
+  }
 });
+
+
 
 module.exports = mongoose.model("UserDetails", userDetailsSchema);

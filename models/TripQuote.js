@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const tripQuoteSchema = new mongoose.Schema({
   tripType: {
     type: String,
-    enum: ['one-way', 'return'], // must match frontend values exactly
+    enum: ['one-way', 'return','oneway'], // must match frontend values exactly
     required: true
   },
   pickupLocation: {
@@ -22,7 +22,10 @@ const tripQuoteSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  status: { 
+    type: String, 
+    default: 'Pending' }
 });
 
 module.exports = mongoose.model('TripQuote', tripQuoteSchema);

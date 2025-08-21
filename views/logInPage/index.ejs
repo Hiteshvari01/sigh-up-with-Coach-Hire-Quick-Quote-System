@@ -16,7 +16,8 @@
     <img src="/assets/logo.png" alt="Logo" class="w-16 h-16 object-contain mb-6" />
     <h2 class="text-2xl font-bold mb-6 text-[#0d3b66]">Welcome back!</h2>
 
-    <form method="POST" action="/1stLink" id="loginForm" class="w-full" novalidate>
+    <form method="POST" action="/login" id="loginForm" class="w-full" novalidate>
+
       <!-- Email -->
       <div class="mb-5">
         <label for="email" class="block mb-1 text-[#0d3b66] font-semibold">Email</label>
@@ -29,7 +30,7 @@
           class="w-full rounded-md border border-gray-400 px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0066f5]"
           aria-describedby="emailError"
         />
-        <p class="mt-1 text-red-600 text-sm hidden" id="emailError">Please enter a valid email address.</p>
+        <p class="mt-1 text-red-600 text-sm hidden" id="emailError">Invalid email or password</p>
       </div>
 
       <!-- Password -->
@@ -56,7 +57,7 @@
           </button>
         </div>
         <p class="mt-1 text-red-600 text-sm hidden" id="passwordError">
-          Password must be at least 6 characters.
+          Invalid email or password
         </p>
       </div>
 
@@ -85,84 +86,81 @@
 
       <!-- Forgot password -->
       <div class="mt-6 text-center">
-        <a href="#" class="text-[#004bb5] text-sm hover:underline">Forgot password?</a>
+        <a href="/reset"  class="text-[#004bb5] text-sm hover:underline">Forgot password?</a>
       </div>
     </form>
+   
+  </div>
+</div>
+
   </div>
 
-  <script>
-    // Password toggle logic
-    const togglePasswordBtn = document.getElementById("togglePassword");
-    const passwordInput = document.getElementById("password");
+<script>
+  
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const submitBtn = document.getElementById("submitBtn");
+  const emailError = document.getElementById("emailError");
+  const passwordError = document.getElementById("passwordError");
 
-    togglePasswordBtn.addEventListener("click", () => {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-      passwordInput.setAttribute("type", type);
-      togglePasswordBtn.firstElementChild.classList.toggle("bi-eye");
-      togglePasswordBtn.firstElementChild.classList.toggle("bi-eye-slash");
-    });
+  async function validateUser() {
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
-    // Form validation & enabling submit button
-    const form = document.getElementById("loginForm");
-    const emailInput = document.getElementById("email");
-    const passwordInputField = document.getElementById("password");
-    const emailError = document.getElementById("emailError");
-    const passwordError = document.getElementById("passwordError");
-    const submitBtn = document.getElementById("submitBtn");
-
-    // Validate email with regex
-    function isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!email || !password) {
+      submitBtn.disabled = true;
+      return;
     }
 
-    function validateInputs() {
-      let emailValid = false;
-      let passwordValid = false;
+    try {
+      const res = await fetch("/validate-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-      // Email validation
-      if (emailInput.value.trim() === "" || !isValidEmail(emailInput.value.trim())) {
-        emailError.classList.remove("hidden");
-        emailInput.classList.add("border-red-500");
-        emailInput.classList.add("text-red-600");
-        emailValid = false;
-      } else {
+      if (data.valid) {
+        submitBtn.disabled = false;
         emailError.classList.add("hidden");
-        emailInput.classList.remove("border-red-500");
-        emailInput.classList.remove("text-red-600");
-        emailValid = true;
-      }
-
-      // Password validation
-      if (passwordInputField.value.trim().length < 6) {
-        passwordError.classList.remove("hidden");
-        passwordInputField.classList.add("border-red-500");
-        passwordInputField.classList.add("text-red-600");
-        passwordValid = false;
-      } else {
         passwordError.classList.add("hidden");
-        passwordInputField.classList.remove("border-red-500");
-        passwordInputField.classList.remove("text-red-600");
-        passwordValid = true;
+      } else {
+        submitBtn.disabled = true;
+        emailError.classList.remove("hidden");
+        passwordError.classList.remove("hidden");
       }
-
-      // Enable submit button only if both valid
-      submitBtn.disabled = !(emailValid && passwordValid);
+    } catch (err) {
+      console.error(err);
     }
+  }
 
-    // Add input event listeners for realtime validation
-    emailInput.addEventListener("input", validateInputs);
-    passwordInputField.addEventListener("input", validateInputs);
+  emailInput.addEventListener("input", validateUser);
+  passwordInput.addEventListener("input", validateUser);
 
-    // Final check on form submit
-    form.addEventListener("submit", (e) => {
-      validateInputs();
-      if (submitBtn.disabled) {
-        e.preventDefault();
-      }
+  // On submit, redirect to 1stLink if valid
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: emailInput.value,
+        password: passwordInput.value,
+      }),
     });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = "/1stLink";
+    } else {
+      emailError.classList.remove("hidden");
+      passwordError.classList.remove("hidden");
+    }
+  });
 
-    // Initial validation to set button state on page load
-    validateInputs();
-  </script>
+
+
+  
+</script>
+
 </body>
 </html>

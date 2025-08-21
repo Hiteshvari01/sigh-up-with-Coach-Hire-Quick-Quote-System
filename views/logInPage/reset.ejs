@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reset Password</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+    <h2 class="text-xl font-bold mb-4 text-center text-[#0d3b66]">Reset Password</h2>
+
+    <% if (error) { %>
+      <p class="text-red-600 text-sm mb-3"><%= error %></p>
+    <% } %>
+
+    <form method="POST" action="/reset">
+      <label class="block text-sm font-medium mb-1">Enter your email</label>
+      <input type="email" name="email" required
+        class="w-full border rounded-md px-3 py-2 mb-4 focus:ring-2 focus:ring-[#0066f5]"/>
+      <button type="submit"
+        class="w-full bg-[#0066f5] text-white py-2 rounded-md hover:bg-[#004bb5]">
+        Continue
+      </button>
+    </form>
+  </div>
+</body>
+</html>
