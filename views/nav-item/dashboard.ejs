@@ -1,5 +1,3 @@
-<!-- Google Material Icons --> 
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <!-- CSS -->
 <link rel="stylesheet" href="/css/dashboard.css">
 
@@ -165,6 +163,23 @@
   </div>
 </div>
    
+
+   </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs d-flex flex-wrap gap-2 mb-2">
+    <button id="allBtn" class="btn btn-primary btn-sm rounded-pill px-3 filter-btn">All</button>
+    <button id="acceptedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Accepted</button>
+    <button id="scheduledBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Scheduled</button>
+    <button id="rejectedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Rejected</button>
+  </div>
+
+  <!-- Lead Rows -->
+   
+   <div class="tab-cards">
+  <div class="d-flex flex-column gap-3">
 <% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
   <div class="lead-card lead-row"
        data-id="<%= trip._id %>"
@@ -219,23 +234,6 @@
     </div>
   </div>
 <% }); %>
-   </div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs d-flex flex-wrap gap-2 mb-2">
-    <button id="allBtn" class="btn btn-primary btn-sm rounded-pill px-3 filter-btn">All</button>
-    <button id="acceptedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Accepted</button>
-    <button id="scheduledBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Scheduled</button>
-    <button id="rejectedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Rejected</button>
-  </div>
-
-  <!-- Lead Rows -->
-   <div id="otherContainer"> <!-- Accepted/Rejected ke liye -->
-   <div class="tab-cards">
-  <div class="d-flex flex-column gap-3">
-
    <div class="lead-card lead-row"
      data-id="96-95062025"
      data-submitDate="15 July 2025"
@@ -271,7 +269,7 @@
       <span>9</span>
       <span class="material-icons">groups</span>
     </span>
-    <span class="badge bg-success">Accepted</span>
+      <span class="badge bg-success">Accepted</span>
     <span class="material-icons text-primary">chevron_right</span>
   </div>
 </div>
@@ -312,7 +310,7 @@
       <span>11</span>
       <span class="material-icons">groups</span>
     </span>
-    <span class="badge bg-secondary">Scheduled</span>
+     <span class="badge bg-secondary">Scheduled</span>
     <span class="material-icons text-primary">chevron_right</span>
   </div>
 </div>
@@ -354,12 +352,12 @@
       <span>7</span>
       <span class="material-icons">groups</span>
     </span>
-    <span class="badge bg-danger">Rejected</span>
+     <span class="badge bg-danger">Rejected</span>
     <span class="material-icons text-primary">chevron_right</span>
   </div>
 </div>
   </div>
-</div>
+
 
   </div>
 </div>
@@ -423,24 +421,22 @@ function updateCardStatus(card, newStatus) {
   container.appendChild(card); // move card to end, you can customize order
 }
 
-  }
-  document.addEventListener("DOMContentLoaded", function () {
-  const leadCardList = document.querySelectorAll('.lead-card');
-  const leadCardContainer = document.getElementById('leadCardList');   // upar wala
-  const otherContainer = document.getElementById('otherContainer');   // neeche wala
+ const leadCardList = document.querySelectorAll('#leadCardList .lead-card');
+  const tabsContainer = document.getElementById('tabsContainer');
+  const otherContainer = document.getElementById('otherContainer');
 
   leadCardList.forEach(card => {
-    const icon = card.querySelector('i.bi-hourglass-split'); // sirf hourglass icon check
+    const icon = card.querySelector('i, span.material-icons');
 
-    if (icon) {
-      // Agar hourglass hai to upar hi rahe
-      leadCardContainer.appendChild(card);
+    // Check if card has pending hourglass icon
+    if (icon && icon.classList.contains('bi-hourglass-split')) {
+      tabsContainer.appendChild(card); // Tabs ke upar
     } else {
-      // Baaki sab neeche chale jayein
-      otherContainer.querySelector('.tab-cards .d-flex').appendChild(card);
+      otherContainer.appendChild(card); // Tabs ke neeche
     }
   });
-});
 
+
+  }
 </script>
 <script src="/js/dashboard.js"></script>
