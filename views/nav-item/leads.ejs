@@ -11,7 +11,7 @@
   </div>
 
   <div class="d-flex align-items-center justify-content-between flex-wrap mb-4" style="width: 100%;">
-    <h6 id="sidebar-name" class="fw-semibold mb-0 text-truncate flex-grow-1" style="min-width: 0; font-size: 1.15rem;">Archived Lead</h6>
+    <h6 id="sidebar-name" class="fw-semibold mb-0 text-truncate flex-grow-1" style="min-width: 0; font-size: 1.15rem;">Welcome , <%= admin.username %>!</h6>
     <div class="d-flex align-items-center gap-2 flex-shrink-0">
       <!--
       <button class="btn p-0 border-0 bg-transparent position-relative">
@@ -28,27 +28,22 @@
   </div>
 
   <!-- Heading + Search -->
-  <div class="d-flex align-items-center mb-4 gap-2 flex-wrap flex-sm-nowrap">
-  <!-- Search -->
-  <div class="relative min-w-[100px] w-auto">
-  <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
-  <input type="text" id="leadSearch" 
-         class="border rounded shadow-sm pl-10 pr-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-500" 
-         placeholder="Search">
-</div>
-
-
-  <!-- Sort -->
-  <div class="d-flex align-items-center text-muted small gap-1 ms-auto">
-    <span>Latest first</span>
-    <span class="material-icons" style="font-size: 16px;">unfold_more</span>
-  </div>
-
+  <div class="d-flex flex-row justify-content-between align-items-center mb-4 flex-nowrap">
+    
+    <h6 class="fw-semibold text-muted mb-0 me-3">Pending leads</h6>
+    <div style="width: 200px; min-width: 150px;">
+      <div class="input-group shadow-sm rounded">
+        <span class="input-group-text border-0 bg-transparent p-1 pe-2">
+          <span class="material-icons text-muted" style="font-size: 20px;">search</span>
+        </span>
+        <input type="text" class="form-control border-0 bg-transparent shadow-none px-1" placeholder="Search leads">
+      </div>
+    </div>
     
   </div>
   <div class="d-flex flex-column gap-3">
 <% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
-  <% if(trip.status === 'Accepted') { %>
+  <% if(trip.status === 'Pending') { %>
   <div class="lead-card lead-row"
        data-id="<%= trip._id %>"
        data-submit-date="<%= String(new Date(trip.createdAt).getDate()).padStart(2,'0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %>"
@@ -112,8 +107,80 @@ data-to-stops='<%= JSON.stringify(returnStops.map(stop => ({ location: stop.loca
   </div>
     <% } %>
 <% }); %>
+<!-- Tabs -->
+  <div class="tabs d-flex flex-wrap gap-2 mb-2">
+    <button id="allBtn" class="btn btn-primary btn-sm rounded-pill px-3 filter-btn">All</button>
+    <button id="acceptedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Accepted</button>
+    <button id="scheduledBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Scheduled</button>
+    <button id="rejectedBtn" class="btn btn-sm rounded-pill px-3 filter-btn">Rejected</button>
+  </div>
 
 
+<!-- Accepted / Scheduled / Rejected Leads Section (Below Tabs) -->
+<div class="d-flex flex-column gap-3" id="other-leads">
+  <% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { %>
+    <% if(trip.status !== 'Pending') { %>
+      <div class="lead-card lead-row"
+           data-id="<%= trip._id %>"
+           data-submit-date="<%= String(new Date(trip.createdAt).getDate()).padStart(2,'0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %>"
+           data-name="<%= user?.fullName || '' %>"
+           data-email="<%= user?.email || '' %>"
+           data-phone="<%= user?.phoneNumber || '' %>"
+           data-pickup="<%= trip.pickupLocation %>"
+           data-status="<%= trip.status || 'Pending' %>"
+           data-destination="<%= trip.destinationLocation %>"
+           data-date="<%= timing ? timing.departureDate + ' ' + timing.departureTime : '' %>"
+           data-departure-date="<%= timing?.departureDate %>"
+           data-departure-time="<%= timing?.departureTime %>"
+           data-return-date="<%= timing?.returnDate %>"
+           data-return-time="<%= timing?.returnTime %>"
+           data-passengers="<%= trip.numberOfPeople %>"
+           data-price-estimate="€120"
+           data-from-stops='<%= JSON.stringify(goingStops.map(stop => ({ location: stop.location, duration: stop.duration }))) %>'
+           data-to-stops='<%= JSON.stringify(returnStops.map(stop => ({ location: stop.location, duration: stop.duration }))) %>'>
+        
+        <div class="lead-info">
+          <% if(trip.status === 'Accepted') { %>
+            <span class="material-icons text-success">check_circle</span>
+          <% } else if(trip.status === 'Rejected') { %>
+            <i class="bi bi-x-circle-fill" style="font-size:20px;"></i>
+          <% } else if(trip.status === 'Scheduled') { %>
+            <i class="bi bi-clock-history text-primary"></i>
+          <% } else { %>
+            <i class="text-warning bi bi-hourglass-split"></i>
+          <% } %>
+          <span class="fw-semibold"><%= trip.pickupLocation %></span>
+          <span class="fw-semibold">
+            <span class="material-icons text-primary" style="font-size:20px;margin-right:8px; vertical-align:middle;">arrow_forward</span>
+            <%= trip.destinationLocation %>
+          </span>
+        </div>
+
+        <div class="lead-meta">
+          <span class="text-muted"><%= String(new Date(trip.createdAt).getDate()).padStart(2,'0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %> <%= timing?.departureTime %></span>
+          <span class="fw-medium">€120</span>
+          <span class="d-flex align-items-center gap-1">
+            <span><%= trip.passengerCount %></span>
+            <span class="material-icons">groups</span>
+          </span>
+
+          <!-- Badge based on status -->
+          <% if(trip.status === 'Accepted') { %>
+            <span class="badge bg-success">Accepted</span>
+          <% } else if(trip.status === 'Rejected') { %>
+            <span class="badge bg-danger">Rejected</span>
+          <% } else if(trip.status === 'Scheduled') { %>
+            <span class="badge bg-primary text-light">Scheduled</span>
+          <% } else { %>
+            <span class="badge bg-warning text-dark">Pending</span>
+          <% } %>
+
+          <span class="material-icons text-primary">chevron_right</span>
+        </div>
+      </div>
+    <% } %>
+  <% }); %>
+</div>
 
 
 

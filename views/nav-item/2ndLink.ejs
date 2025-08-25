@@ -16,40 +16,16 @@
       overflow-x: hidden;
       transition: padding-left 0.5s ease;
     }
-@media (min-width: 992px) {
-  body.dashboard-collapsed .lead-card {
-    padding: 6px 10px;
-  }
-
-  body.dashboard-collapsed .lead-info,
-  body.dashboard-collapsed .lead-meta {
-    gap: 4px;
-  }
-
-  body.dashboard-collapsed .lead-info span,
-  body.dashboard-collapsed .lead-meta span {
-    font-size: 0.85rem;
-  }
-}
-
-
     @media (min-width: 992px) {
-      body {
-        padding-left: 227px;
-      }
-
-      body.sidebar-collapsed {
-        padding-left: 80px !important;
-      }
-
-      #sidebar.collapsed ~ #mainContent {
-        margin-left: 0 !important;
-      }
-
-      #dashboardSection {
-        width: 100%;
-      }
-
+      body.dashboard-collapsed .lead-card { padding: 6px 10px; }
+      body.dashboard-collapsed .lead-info,
+      body.dashboard-collapsed .lead-meta { gap: 4px; }
+      body.dashboard-collapsed .lead-info span,
+      body.dashboard-collapsed .lead-meta span { font-size: 0.85rem; }
+      body { padding-left: 227px; }
+      body.sidebar-collapsed { padding-left: 80px !important; }
+      #sidebar.collapsed ~ #mainContent { margin-left: 0 !important; }
+      #dashboardSection { width: 100%; }
       #detailSection {
         width: 0;
         overflow: hidden;
@@ -58,238 +34,138 @@
         transition: width 0.3s ease;
         display: block;
       }
-
       #detailSection.show {
         width: 50%;
         overflow-y: auto;
       }
     }
-
     @media (max-width: 991.98px) {
-      body {
-        padding-left: 0;
-      }
-
-      #dashboardSection,
-      #detailSection {
-        width: 100% !important;
-      }
-
-      .hide-on-mobile {
-        display: none !important;
-      }
-
-      .show-on-mobile {
-        display: block !important;
-      }
-
-      #detailSection {
-        display: none !important;
-      }
-
-      #detailSection.show-on-mobile {
-        display: block !important;
-      }
+      body { padding-left: 0; }
+      #dashboardSection, #detailSection { width: 100% !important; }
+      .hide-on-mobile { display: none !important; }
+      .show-on-mobile { display: block !important; }
+      #detailSection { display: none !important; }
+      #detailSection.show-on-mobile { display: block !important; }
     }
-
-    #sidebar.collapsed {
-      width: 50px !important;
-    }
-
-    #sidebar.collapsed .nav-link span,
-    #sidebar.collapsed #sidebar-name {
-      display: none !important;
-    }
-
-    #mainContent {
-      display: flex;
-      flex-wrap: nowrap;
-      transition: margin-left 0.5s ease;
-      height: 100vh;
-    }
-    
+    #sidebar.collapsed { width: 50px !important; }
+    #sidebar.collapsed .nav-link span, #sidebar.collapsed #sidebar-name { display: none !important; }
+    #mainContent { display: flex; flex-wrap: nowrap; transition: margin-left 0.5s ease; height: 100vh; }
   </style>
 </head>
 
 <body>
   <!-- Sidebar -->
-  <%- include('sidebar') %>
+  <%- include('sidebar', { admin: admin }) %>
 
   <!-- Main Content Wrapper -->
   <div id="mainContent" class="transition-all">
     <!-- Dashboard Content -->
     <div id="dashboardSection">
-      <%- include('transactions') %>
+      <%- include('transactions', { admin: admin }) %>
     </div>
 
     <!-- Detail Panel -->
-     <div id="detailSection">
-  <%- include('leads-details', { detailedTrips: detailedTrips }) %>
-
-
+    <div id="detailSection">
+      <%- include('transactions-details', { detailedTrips: detailedTrips }) %>
     </div>
   </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Responsive Toggle Script --> 
-<script>
-  // ✅ Function 1: Get Distance Between Locations 
-  function getDistanceBetween(pickup, destination) {
-    const distances = {
-      "Skibbereen-Ballydehob": "15 km",
-      "Cork-Kinsale": "25 km",
-      "Bantry-Goleen": "40 km",
-      "Clonakilty-Bandon": "20 km",
-      "Dunmanway-Macroom": "30 km",
-      "Rosscarbery-Leap": "10 km"
-    };
-    const key = `${pickup}-${destination}`;
-    return distances[key] || "N/A";
-  }
+  <!-- Pass detailedTrips to client-side JS -->
+  <script>
+    
+  </script>
 
-  // ✅ Helper Function: Calculate Duration From Distance (default avg speed 40 km/h)
-  function calculateDurationFromDistance(distanceKm, avgSpeedKmph = 40) {
-    if (!distanceKm || isNaN(distanceKm) || distanceKm <= 0) return "N/A";
-
-    const durationInHours = distanceKm / avgSpeedKmph;
-    const hours = Math.floor(durationInHours);
-    const minutes = Math.round((durationInHours - hours) * 60);
-
-    return `${hours}h ${minutes}min`;
-  }
-
-  // ✅ Function 2: Calculate Duration Between Departure & Return OR by Distance if date/time invalid
-  function calculateDuration(departureDate, departureTime, returnDate, returnTime, distanceStr) {
-    try {
-      console.log("Input:", { departureDate, departureTime, returnDate, returnTime, distanceStr });
-
-      const start = new Date(`${departureDate} ${departureTime}`);
-      const end = new Date(`${returnDate} ${returnTime}`);
-      const diffMs = end - start;
-
-      console.log("Start:", start);
-      console.log("End:", end);
-      console.log("diffMs:", diffMs);
-
-      if (!departureDate || !departureTime || !returnDate || !returnTime || isNaN(diffMs) || diffMs < 0) {
-        const distanceKm = parseFloat(distanceStr);
-        console.log("Invalid dates/times, calculating by distance:", distanceKm);
-        return calculateDurationFromDistance(distanceKm);
-      }
-
-      const totalMinutes = Math.floor(diffMs / 60000);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-
-      return `${hours}h ${minutes}min`;
-    } catch (error) {
-      const distanceKm = parseFloat(distanceStr);
-      return calculateDurationFromDistance(distanceKm);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const detailSection = document.getElementById('detailSection');
-    const closeBtn = document.getElementById('closeDetail');
-    const body = document.body;
-
-    function updateBodyPadding() {
-      if (window.innerWidth >= 992) {
-        body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-      } else {
-        body.classList.remove('sidebar-collapsed');
-      }
+  <!-- Responsive Toggle & Random Price Script -->
+  <script>
+    function getRandomPrice(min = 300, max = 500) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // Click listener for each lead card to open detail panel
-    const triggerCards = document.querySelectorAll('.lead-card');
-    triggerCards.forEach(card => {
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        // Collect data attributes from clicked card
-        const data = {
-          submitDate: card.getAttribute('data-submitDate'),
-          id: card.getAttribute('data-id'),
-          name: card.getAttribute('data-name'),
-          email: card.getAttribute('data-email'),
-          phone: card.getAttribute('data-phone'),
-          pickup: card.getAttribute('data-pickup'),
-          destination: card.getAttribute('data-destination'),
-          date: card.getAttribute('data-date'),
-          price: card.getAttribute('data-price'),
-          people: card.getAttribute('data-people'),
-          departureDate: card.getAttribute('data-departure-date'),
-          departureTime: card.getAttribute('data-departure-time'),
-          returnDate: card.getAttribute('data-return-date'),
-          returnTime: card.getAttribute('data-return-time'),
-          passengers: card.getAttribute('data-passengers'),
-          priceEstimate: card.getAttribute('data-price-estimate'),
-          distance: card.getAttribute('data-distance'),
-          duration: card.getAttribute('data-duration'),
-        };
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const dashboardSection = document.getElementById('dashboardSection');
+      const detailSection = document.getElementById('detailSection');
+      const closeBtn = document.getElementById('closeDetail');
+      const body = document.body;
 
-        // Show detail panel & adjust layout based on screen size
+      function updateBodyPadding() {
         if (window.innerWidth >= 992) {
-          body.classList.add('dashboard-collapsed');
-          sidebar.classList.add('collapsed');
-          dashboardSection.style.width = '50%';
-          detailSection.classList.add('show');
+          body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
         } else {
-          dashboardSection.classList.add('hide-on-mobile');
-          detailSection.classList.add('show-on-mobile'); 
+          body.classList.remove('sidebar-collapsed');
         }
-        updateBodyPadding();
+      }
 
-        // Call your updateLeadDetails function to populate the detail panel
-        updateLeadDetails(data);
+      // Assign random price to each lead card
+      document.querySelectorAll('.lead-card').forEach(card => {
+        if (!card.dataset.priceEstimate) {
+          card.dataset.priceEstimate = getRandomPrice();
+        }
+
+        // Update price visually in the card
+        const priceDiv = card.querySelector('.text-success');
+        if (priceDiv) {
+          priceDiv.textContent = '€' + card.dataset.priceEstimate;
+        }
+
+        card.addEventListener('click', () => {
+          const data = {
+            id: card.dataset.id,
+            name: card.dataset.name,
+            email: card.dataset.email,
+            phone: card.dataset.phone,
+            pickup: card.dataset.pickup,
+            destination: card.dataset.destination,
+            departureDate: card.dataset.departureDate,
+            departureTime: card.dataset.departureTime,
+            returnDate: card.dataset.returnDate,
+            returnTime: card.dataset.returnTime,
+            passengers: card.dataset.passengers,
+            priceEstimate: card.dataset.priceEstimate,
+            submitDate: card.dataset.submitDate,
+            fromStops: JSON.parse(card.dataset.fromStops || "[]"),
+            toStops: JSON.parse(card.dataset.toStops || "[]")
+          };
+
+          // Show detail panel
+          if (window.innerWidth >= 992) {
+            body.classList.add('dashboard-collapsed');
+            sidebar.classList.add('collapsed');
+            dashboardSection.style.width = '50%';
+            detailSection.classList.add('show');
+          } else {
+            dashboardSection.classList.add('hide-on-mobile');
+            detailSection.classList.add('show-on-mobile'); 
+          }
+          updateBodyPadding();
+
+          // Populate detail panel
+          updateLeadDetails(data);
+        });
       });
+
+      // Close detail panel
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          if (window.innerWidth >= 992) {
+            body.classList.remove('dashboard-collapsed');
+            sidebar.classList.remove('collapsed');
+            dashboardSection.style.width = '100%';
+            detailSection.classList.remove('show');
+          } else {
+            dashboardSection.classList.remove('hide-on-mobile');
+            detailSection.classList.remove('show-on-mobile');
+          }
+          updateBodyPadding();
+        });
+      }
+
+      window.addEventListener('resize', updateBodyPadding);
+      updateBodyPadding();
     });
-
-    // Close button logic to hide detail panel and reset layout
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        if (window.innerWidth >= 992) {
-          body.classList.remove('dashboard-collapsed');
-          sidebar.classList.remove('collapsed');
-          dashboardSection.style.width = '100%';
-          detailSection.classList.remove('show');
-        } else {
-          dashboardSection.classList.remove('hide-on-mobile');
-          detailSection.classList.remove('show-on-mobile');
-        }
-        updateBodyPadding();
-      });
-    }
-
-    window.addEventListener('resize', updateBodyPadding);
-    updateBodyPadding();
-
-    // ✅ Message form submit handler inside DOMContentLoaded with null check
-    const messageForm = document.getElementById("messageForm");
-    if (messageForm) {
-      messageForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const message = document.getElementById("messageText").value.trim();
-
-        if (message !== "") {
-          alert("Message sent: " + message);
-          const modalElement = document.getElementById('messageModal');
-          const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-          modal.hide();
-          messageForm.reset();
-        } else {
-          alert("Please enter a message.");
-        }
-      });
-    }
-  });
-</script>
-
-
-
+  </script>
 </body>
 </html>

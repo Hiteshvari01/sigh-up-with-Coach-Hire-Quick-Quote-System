@@ -10,9 +10,9 @@
   <!-- Bootstrap Icons CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 </head>
-<body class=" font-sans min-h-screen flex items-center justify-center">
+<body class="font-sans min-h-screen flex items-center justify-center bg-gray-50">
 
-  <div class=" rounded-lg p-8 w-full max-w-sm flex flex-col items-center shadow-lg">
+  <div class="rounded-lg p-8 w-full max-w-sm flex flex-col items-center shadow-lg bg-white">
     <img src="/assets/logo.png" alt="Logo" class="w-16 h-16 object-contain mb-6" />
     <h2 class="text-2xl font-bold mb-6 text-[#0d3b66]">Welcome back!</h2>
 
@@ -28,9 +28,8 @@
           placeholder="Enter your email"
           required
           class="w-full rounded-md border border-gray-400 px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0066f5]"
-          aria-describedby="emailError"
         />
-        <p class="mt-1 text-red-600 text-sm hidden" id="emailError">Invalid email or password</p>
+        <p class="mt-1 text-red-600 text-sm hidden" id="emailError">Please enter a valid email</p>
       </div>
 
       <!-- Password -->
@@ -45,7 +44,6 @@
             required
             minlength="6"
             class="w-full rounded-md border border-gray-400 px-4 py-2 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0066f5]"
-            aria-describedby="passwordError"
           />
           <button
             type="button"
@@ -56,9 +54,7 @@
             <i class="bi bi-eye-slash"></i>
           </button>
         </div>
-        <p class="mt-1 text-red-600 text-sm hidden" id="passwordError">
-          Invalid email or password
-        </p>
+        <p class="mt-1 text-red-600 text-sm hidden" id="passwordError">Password must be at least 6 characters</p>
       </div>
 
       <!-- Remember me -->
@@ -78,88 +74,84 @@
       <button
         type="submit"
         id="submitBtn"
-        class="w-full bg-[#0066f5] hover:bg-[#0056d6] text-white py-3 rounded-full font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled
+        class="w-full bg-[#0066f5] hover:bg-[#0056d6] text-white py-3 rounded-full font-semibold transition"
       >
         Sign In
       </button>
 
       <!-- Forgot password -->
       <div class="mt-6 text-center">
-        <a href="/reset"  class="text-[#004bb5] text-sm hover:underline">Forgot password?</a>
+        <a href="/reset" class="text-[#004bb5] text-sm hover:underline">Forgot password?</a>
       </div>
     </form>
-   
-  </div>
-</div>
-
   </div>
 
 <script>
-  
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-  const submitBtn = document.getElementById("submitBtn");
   const emailError = document.getElementById("emailError");
   const passwordError = document.getElementById("passwordError");
+  const togglePassword = document.getElementById("togglePassword");
 
-  async function validateUser() {
-    const email = emailInput.value;
-    const password = passwordInput.value;
+  // Password visibility toggle
+  togglePassword.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    togglePassword.innerHTML = type === "password"
+      ? '<i class="bi bi-eye-slash"></i>'
+      : '<i class="bi bi-eye"></i>';
+  });
 
-    if (!email || !password) {
-      submitBtn.disabled = true;
-      return;
+  // Form validation
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    let valid = true;
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    // Email validation
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      emailError.classList.remove("hidden");
+      valid = false;
+    } else {
+      emailError.classList.add("hidden");
     }
 
+    // Password validation
+    if (!password || password.length < 6) {
+      passwordError.classList.remove("hidden");
+      valid = false;
+    } else {
+      passwordError.classList.add("hidden");
+    }
+
+    if (!valid) return;
+
+    // Submit form to server
     try {
-      const res = await fetch("/validate-login", {
+      const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
 
-      if (data.valid) {
-        submitBtn.disabled = false;
-        emailError.classList.add("hidden");
-        passwordError.classList.add("hidden");
+      if (data.success) {
+        window.location.href = "/1stLink";
       } else {
-        submitBtn.disabled = true;
+        emailError.textContent = data.message || "Invalid email or password";
         emailError.classList.remove("hidden");
         passwordError.classList.remove("hidden");
       }
     } catch (err) {
       console.error(err);
-    }
-  }
-
-  emailInput.addEventListener("input", validateUser);
-  passwordInput.addEventListener("input", validateUser);
-
-  // On submit, redirect to 1stLink if valid
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const res = await fetch("/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: emailInput.value,
-        password: passwordInput.value,
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      window.location.href = "/1stLink";
-    } else {
+      emailError.textContent = "Server error, try again later";
       emailError.classList.remove("hidden");
-      passwordError.classList.remove("hidden");
     }
   });
-
-
-
-  
 </script>
 
 </body>

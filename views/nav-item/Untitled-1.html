@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="/css/dashboard.css">
+
+<!-- Main Content Wrapper -->
+<div class="container-fluid px-3 px-md-4 py-4" style="background-color: #f1f3f6; min-height: 100vh;">
+
+  <!-- Top: Greeting + Actions -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1 flex-shrink-1">
+    <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap mb-4" style="width: 100%;">
+    <h6 class="fw-semibold mb-0 text-truncate flex-grow-1" style="min-width: 0; font-size: 1.15rem;">Welcome, Damien!</h6>
+    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+      <button class="btn p-0 border-0 bg-transparent position-relative">
+        <span class="material-icons text-dark">notifications</span>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-white rounded-circle"></span>
+      </button>
+      <button class="btn btn-outline-primary d-flex align-items-center gap-1 rounded-pill px-2 py-1">
+        <span class="material-icons" style="font-size: 18px;">calendar_today</span>
+        <span class="d-none d-sm-inline">Calendar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Heading + Search -->
+  <div class="d-flex flex-row justify-content-between align-items-center mb-4 flex-nowrap">
+    <h6 class="fw-semibold text-muted mb-0 me-3">Pending leads</h6>
+    <div style="width: 200px; min-width: 150px;">
+      <div class="input-group shadow-sm rounded">
+        <span class="input-group-text border-0 bg-transparent p-1 pe-2">
+          <span class="material-icons text-muted" style="font-size: 20px;">search</span>
+        </span>
+        <input type="text" class="form-control border-0 bg-transparent shadow-none px-1" placeholder="Search leads">
+      </div>
+    </div>
+  </div>

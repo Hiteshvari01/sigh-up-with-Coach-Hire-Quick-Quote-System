@@ -5,41 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
 
-  <!-- Bootstrap CSS & Icons -->
-   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+  <!-- Tailwind, Material Icons, Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
   <style>
     body {
-  overflow-x: hidden;
-}
-@media (min-width: 992px) {
-  body {
-    padding-left: 227px; /* sidebar width */
-  }
-}
-@media (max-width: 991.98px) {
-  body {
-    padding-left: 0;
-  }
-}
-
+      overflow-x: hidden;
+      transition: padding-left 0.5s ease;
+    }
+    @media (min-width: 992px) {
+      body.dashboard-collapsed .lead-card { padding: 6px 10px; }
+      body.dashboard-collapsed .lead-info,
+      body.dashboard-collapsed .lead-meta { gap: 4px; }
+      body.dashboard-collapsed .lead-info span,
+      body.dashboard-collapsed .lead-meta span { font-size: 0.85rem; }
+      body { padding-left: 227px; }
+      body.sidebar-collapsed { padding-left: 80px !important; }
+      #sidebar.collapsed ~ #mainContent { margin-left: 0 !important; }
+      #dashboardSection { width: 100%; }
+      #detailSection {
+        width: 0;
+        overflow: hidden;
+        background-color: #fff;
+        border-left: 1px solid #ddd;
+        transition: width 0.3s ease;
+        display: block;
+      }
+      #detailSection.show {
+        width: 50%;
+        overflow-y: auto;
+      }
+    }
+    @media (max-width: 991.98px) {
+      body { padding-left: 0; }
+      #dashboardSection, #detailSection { width: 100% !important; }
+      .hide-on-mobile { display: none !important; }
+      .show-on-mobile { display: block !important; }
+      #detailSection { display: none !important; }
+      #detailSection.show-on-mobile { display: block !important; }
+    }
+    #sidebar.collapsed { width: 50px !important; }
+    #sidebar.collapsed .nav-link span, #sidebar.collapsed #sidebar-name { display: none !important; }
+    #mainContent { display: flex; flex-wrap: nowrap; transition: margin-left 0.5s ease; height: 100vh; }
   </style>
 </head>
+
 <body>
-
   <!-- Sidebar -->
-  <%- include('sidebar') %>
+  <%- include('sidebar', { admin: admin }) %>
 
+  <!-- Main Content Wrapper -->
+  <div id="mainContent" class="transition-all">
+    <!-- Dashboard Content -->
+    <div id="dashboardSection">
+      <%- include('ErchivedLead', { admin: admin }) %>
+    </div>
 
-  <!-- Main Content -->
-  <%- include('ErchivedLead') %>
+    <!-- Detail Panel -->
+    <div id="detailSection">
+      <%- include('leads-details', { detailedTrips: detailedTrips }) %>
+    </div>
+  </div>
 
-
-  <!-- Bootstrap Bundle JS (includes Popper for offcanvas) -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Pass detailedTrips to client-side JS -->
+  <script>
+    
+  </script>
+
+  <!-- Responsive Toggle & Random Price Script -->
+  <script>
+    function getRandomPrice(min = 300, max = 500) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const dashboardSection = document.getElementById('dashboardSection');
+      const detailSection = document.getElementById('detailSection');
+      const closeBtn = document.getElementById('closeDetail');
+      const body = document.body;
+
+      function updateBodyPadding() {
+        if (window.innerWidth >= 992) {
+          body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        } else {
+          body.classList.remove('sidebar-collapsed');
+        }
+      }
+
+      // Assign random price to each lead card
+      document.querySelectorAll('.lead-card').forEach(card => {
+        if (!card.dataset.priceEstimate) {
+          card.dataset.priceEstimate = getRandomPrice();
+        }
+
+        
+
+        card.addEventListener('click', () => {
+          const data = {
+            id: card.dataset.id,
+            name: card.dataset.name,
+            email: card.dataset.email,
+            phone: card.dataset.phone,
+            pickup: card.dataset.pickup,
+            destination: card.dataset.destination,
+            departureDate: card.dataset.departureDate,
+            departureTime: card.dataset.departureTime,
+            returnDate: card.dataset.returnDate,
+            returnTime: card.dataset.returnTime,
+            passengers: card.dataset.passengers,
+            priceEstimate: card.dataset.priceEstimate,
+            submitDate: card.dataset.submitDate,
+            fromStops: JSON.parse(card.dataset.fromStops || "[]"),
+            toStops: JSON.parse(card.dataset.toStops || "[]")
+          };
+
+          // Show detail panel
+          if (window.innerWidth >= 992) {
+            body.classList.add('dashboard-collapsed');
+            sidebar.classList.add('collapsed');
+            dashboardSection.style.width = '50%';
+            detailSection.classList.add('show');
+          } else {
+            dashboardSection.classList.add('hide-on-mobile');
+            detailSection.classList.add('show-on-mobile'); 
+          }
+          updateBodyPadding();
+
+          // Populate detail panel
+          updateLeadDetails(data);
+        });
+      });
+
+      // Close detail panel
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          if (window.innerWidth >= 992) {
+            body.classList.remove('dashboard-collapsed');
+            sidebar.classList.remove('collapsed');
+            dashboardSection.style.width = '100%';
+            detailSection.classList.remove('show');
+          } else {
+            dashboardSection.classList.remove('hide-on-mobile');
+            detailSection.classList.remove('show-on-mobile');
+          }
+          updateBodyPadding();
+        });
+      }
+
+      window.addEventListener('resize', updateBodyPadding);
+      updateBodyPadding();
+    });
+  </script>
 </body>
 </html>

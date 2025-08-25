@@ -23,9 +23,11 @@ const tripQuoteSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  status: { 
-    type: String, 
-    default: 'Pending' }
+  status: {
+    type: String,
+    enum: ["Pending", "Accepted", "Rejected"],
+    default: "Pending"
+  }
 });
 
 module.exports = mongoose.model('TripQuote', tripQuoteSchema);

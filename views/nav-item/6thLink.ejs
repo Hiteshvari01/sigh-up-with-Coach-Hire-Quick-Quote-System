@@ -32,11 +32,13 @@
 <body>
 
   <!-- Sidebar -->
-  <%- include('sidebar') %>
+  <%- include('sidebar', { admin: admin }) %>
 
 
   <!-- Main Content -->
-  <%- include('settings') %>
+   <%- include('settings', { admin: admin }) %>
+
+
 
 
   <!-- Bootstrap Bundle JS (includes Popper for offcanvas) -->

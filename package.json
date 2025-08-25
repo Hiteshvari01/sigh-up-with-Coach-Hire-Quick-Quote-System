@@ -23,6 +23,7 @@
     "mongoose": "^8.16.3",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
+    "session": "^0.1.0",
     "twilio": "^5.8.0"
   }
 }

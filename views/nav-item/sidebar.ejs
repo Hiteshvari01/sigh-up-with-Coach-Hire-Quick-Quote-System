@@ -47,6 +47,7 @@
       <i class="bi bi-archive"></i> <span>Archived Leads</span>
     </a>
   </li>
+    
 </template>
 
 <!-- Mobile Sidebar -->
@@ -54,9 +55,9 @@
   <div class="offcanvas-header d-flex align-items-center gap-2">
     <div class="rounded-circle text-white fw-bold d-flex justify-content-center align-items-center"
          style="width: 40px; height: 40px; font-size: 1.2rem; background-color: #074cad;">
-      D
+      <%= admin.username.charAt(0).toUpperCase() %>
     </div>
-    <span class="fw-semibold" style="color: #326bba; font-size: 1.1rem;">Damien</span>
+    <span class="fw-semibold" style="color: #326bba; font-size: 1.1rem;">Welcome , <%= admin.username %>!</span>
     <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body d-flex flex-column justify-content-between">
@@ -79,9 +80,10 @@
   <div class="d-flex align-items-center gap-2 mb-4">
     <div class="rounded-circle text-white fw-bold d-flex justify-content-center align-items-center"
          style="width: 40px; height: 40px; font-size: 1.2rem; background-color: #074cad;">
-      D
+            <%= admin.username.charAt(0).toUpperCase() %>
+
     </div>
-    <span id="sidebar-name" class="fw-semibold" style="color: #326bba;">Damien</span>
+    <span id="sidebar-name" class="fw-semibold" style="color: #326bba;"><%= admin.username %>!</span>
   </div>
 
   <!-- Navigation -->
@@ -92,7 +94,7 @@
     <a href="/6thLink" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
       <i class="bi bi-gear"></i> <span>Settings</span>
     </a>
-    <a href="#" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
+    <a href="/logout-page" class="nav-link d-flex align-items-center gap-2 text-dark fw-medium">
       <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
     </a>
   </div>
