@@ -21,9 +21,11 @@
     "emailjs": "^4.0.3",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
+    "http": "^0.0.1-security",
     "mongoose": "^8.16.3",
     "nodemailer": "^7.0.5",
     "session": "^0.1.0",
+    "socket.io": "^4.8.1",
     "twilio": "^5.8.0"
   },
   "devDependencies": {

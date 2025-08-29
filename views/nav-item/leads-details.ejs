@@ -231,6 +231,12 @@ confirmDelete.addEventListener('click', async () => {
         if(data.success){
             showToast("Lead deleted successfully", "success");
             toggleDeleteRestoreButtons('Deleted');
+
+            // ✅ Redirect to 1stLink after short delay
+            setTimeout(() => {
+                window.location.href = "/1stLink";
+            }, 1000); // 1 second delay for toast
+
         } else showToast(data.message || "Failed to delete lead", "error");
     } catch(err){ console.error(err); showToast("Server error while deleting lead","error"); }
 });
@@ -252,6 +258,11 @@ document.getElementById('restoreBtn').addEventListener('click', async () => {
 
             // 1️⃣ Hide restore button, show delete button again
             toggleDeleteRestoreButtons('Restored');
+
+            // 2️⃣ Redirect to Archived / 5thLink after short delay
+            setTimeout(() => {
+                window.location.href = "/5thLink";
+            }, 1000); // 1 second delay for toast
 
             // 2️⃣ Remove lead from Archived list (DOM) dynamically
             const archivedLeadElement = document.querySelector(`#lead-${tripId}`);
@@ -290,6 +301,12 @@ function updateLeadStatus(newStatus){
             toggleActionButtons(false);
             showToast(`Status changed to ${newStatus}`, newStatus==='Rejected'?'error':'success');
             toggleDeleteRestoreButtons(newStatus);
+
+            // ✅ Redirect after short delay (optional 1s for toast to show)
+            setTimeout(() => {
+                window.location.href = "/1stLink"; // yaha 1stLink.ejs ka route
+            }, 1000);
+
         } else showToast(data.message || "Failed to update status","error");
     })
     .catch(err=>{ console.error(err); showToast("Server error while updating status","error"); });
