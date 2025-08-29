@@ -23,10 +23,22 @@ const tripQuoteSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+
+  // Lead status
   status: {
     type: String,
-    enum: ["Pending", "Accepted", "Rejected"],
+    enum: ["Pending", "Accepted", "Rejected", "Deleted"], // 👈 Deleted bhi add kiya
     default: "Pending"
+  },
+
+  // ✨ Soft Delete flags
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 });
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard</title>
+  <title>4rthLink</title>
 
   <!-- Tailwind, Material Icons, Bootstrap CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet" />
@@ -61,12 +61,13 @@
   <div id="mainContent" class="transition-all">
     <!-- Dashboard Content -->
     <div id="dashboardSection">
-      <%- include('emailtemp', { admin: admin }) %>
+      <%- include('emailTemplate', {templates: templates }) %>
+
     </div>
 
     <!-- Detail Panel -->
     <div id="detailSection">
-      <%- include('leads-details', { detailedTrips: detailedTrips }) %>
+      <%- include('edit-email-template', { templates: templates}) %>
     </div>
   </div>
 
@@ -80,9 +81,7 @@
 
   <!-- Responsive Toggle & Random Price Script -->
   <script>
-    function getRandomPrice(min = 300, max = 500) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+   
 
     document.addEventListener('DOMContentLoaded', () => {
       const sidebar = document.getElementById('sidebar');
@@ -101,30 +100,13 @@
 
       // Assign random price to each lead card
       document.querySelectorAll('.lead-card').forEach(card => {
-        if (!card.dataset.priceEstimate) {
-          card.dataset.priceEstimate = getRandomPrice();
-        }
-
-        
-
+       
         card.addEventListener('click', () => {
           const data = {
-            id: card.dataset.id,
-            name: card.dataset.name,
-            email: card.dataset.email,
-            phone: card.dataset.phone,
-            pickup: card.dataset.pickup,
-            destination: card.dataset.destination,
-            departureDate: card.dataset.departureDate,
-            departureTime: card.dataset.departureTime,
-            returnDate: card.dataset.returnDate,
-            returnTime: card.dataset.returnTime,
-            passengers: card.dataset.passengers,
-            priceEstimate: card.dataset.priceEstimate,
-            submitDate: card.dataset.submitDate,
-            fromStops: JSON.parse(card.dataset.fromStops || "[]"),
-            toStops: JSON.parse(card.dataset.toStops || "[]")
-          };
+        id: card.dataset.id,
+        subject: card.dataset.subject,
+        body: card.dataset.body
+      };
 
           // Show detail panel
           if (window.innerWidth >= 992) {

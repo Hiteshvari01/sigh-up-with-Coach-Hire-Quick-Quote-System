@@ -1,51 +1,53 @@
+<link rel="stylesheet" href="/css/leads.css">
 
 <!-- Main Content Wrapper -->
-<div class="min-h-screen bg-gray-100 px-3 md:px-4 py-4">
+<div class="container-fluid px-3 px-md-4 py-4" style="background-color: #f1f3f6; min-height: 100vh;">
 
-
-    <!-- Top: Greeting + Actions -->
-  <div class="flex items-center gap-2">
-    <button class="btn lg:hidden p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
-      <i class="bi bi-list text-xl"></i>
+  <!-- Top: Greeting + Actions -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1 flex-shrink-1">
+    <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+      <i class="bi bi-list fs-4"></i>
     </button>
   </div>
 
-  <!-- Welcome Header -->
-  <div class="flex items-center justify-between flex-wrap mb-4 w-full">
-    <h6 id="sidebar-name" class="font-semibold mb-0 truncate flex-grow text-[1.15rem]">Users</h6>
+  <div class="d-flex align-items-center justify-content-between flex-wrap mb-4" style="width: 100%;">
+    <h6 id="sidebar-name" class="fw-semibold mb-0 text-truncate flex-grow-1" style="min-width: 0; font-size: 1.15rem;">
+      Welcome , <%= admin.username %>!
+    </h6>
+    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+      <!-- Optional buttons can go here -->
+    </div>
   </div>
 
-  <div class="d-flex align-items-center mb-4 gap-2 flex-wrap flex-sm-nowrap">
-  <!-- Search -->
-  <div class="relative min-w-[100px] w-auto">
-  <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
-  <input type="text" id="leadSearch" 
-         class="border rounded shadow-sm pl-10 pr-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-500" 
-         placeholder="Search">
-</div>
-
-
-  <!-- Sort -->
-  <div class="d-flex align-items-center text-muted small gap-1 ms-auto">
-    <span>Latest first</span>
-    <span class="material-icons" style="font-size: 16px;">unfold_more</span>
+  <!-- Heading + Search -->
+  <div class="d-flex flex-row justify-content-between align-items-center mb-4 flex-nowrap">
+    <h6 class="fw-semibold text-muted mb-0 me-3">Pending leads</h6>
+    <div style="width: 200px; min-width: 150px;">
+      <div class="input-group shadow-sm rounded">
+        <span class="input-group-text border-0 bg-transparent p-1 pe-2">
+          <span class="material-icons text-muted" style="font-size: 20px;">search</span>
+        </span>
+        <input type="text" class="form-control border-0 bg-transparent shadow-none px-1" placeholder="Search leads">
+      </div>
+    </div>
   </div>
-</div>
 
-  <!-- Leads Container -->
-  <!-- Leads Container -->
-  <div class="flex flex-col gap-2">
-    <% detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => { 
-        if (!trip.priceEstimate) {
-          trip.priceEstimate = Math.floor(Math.random() * (500 - 300 + 1)) + 300;
-        }
+  <div class="d-flex flex-column gap-3">
+    <% 
+      const seenEmails = new Set();
+      detailedTrips.forEach(({ trip, goingStops, returnStops, timing, user }) => {
+        if (!user || !user.email) return;
+        if (seenEmails.has(user.email)) return; // skip duplicate emails
+        seenEmails.add(user.email);
     %>
-      <div class="bg-white rounded shadow-sm  p-2 flex items-center justify-between cursor-pointer lead-card"
+
+      <div class="lead-card lead-row"
+           data-trip-type="<%= trip.tripType || 'oneway' %>"
            data-id="<%= trip._id %>"
            data-submit-date="<%= String(new Date(trip.createdAt).getDate()).padStart(2,'0') %> <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(trip.createdAt).getMonth()] %> <%= new Date(trip.createdAt).getFullYear() %>"
-           data-name="<%= user?.fullName || '' %>"
-           data-email="<%= user?.email || '' %>"
-           data-phone="<%= user?.phoneNumber || '' %>"
+           data-name="<%= user.fullName %>"
+           data-email="<%= user.email %>"
+           data-phone="<%= user.phoneNumber || '' %>"
            data-pickup="<%= trip.pickupLocation %>"
            data-status="<%= trip.status || 'Pending' %>"
            data-destination="<%= trip.destinationLocation %>"
@@ -55,76 +57,63 @@
            data-return-date="<%= timing?.returnDate %>"
            data-return-time="<%= timing?.returnTime %>"
            data-passengers="<%= trip.numberOfPeople %>"
-           data-price-estimate="<%= trip.priceEstimate %>">
-
-        
-
-        <!-- Passenger Name -->
+           data-price-estimate="€120"
+           data-from-stops='<%= JSON.stringify(goingStops.map(stop => ({ location: stop.location, duration: stop.duration }))) %>'
+           data-to-stops='<%= JSON.stringify(returnStops.map(stop => ({ location: stop.location, duration: stop.duration }))) %>'>
+           
         <div class="flex flex-col sm:flex-row items-start sm:items-center flex-grow gap-3 sm:gap-2">
-        <div class="font-semibold"><%= user?.fullName || 'N/A' %></div>
-        <div class="text-gray-500 text-xs"><%= user?.email || 'N/A' %></div>
+          <div class="font-semibold"><%= user.fullName %></div>
+          <div class="text-gray-500 text-xs">
+            <a href="javascript:void(0)" class="user-email"><%= user.email %></a> • Trips booked: <%= userTripCount[user.email] || 0 %>
+          </div>
+        </div>
+        <div class="flex items-center text-gray-500 ml-3">
+          <span class="material-icons">chevron_right</span>
+        </div>
       </div>
 
-      <!-- Chevron Icon Last -->
-      <div class="flex items-center text-gray-500 ml-3">
-        <span class="material-icons">chevron_right</span>
-      </div>
-    </div>
     <% }); %>
   </div>
-
+  
 </div>
 
-<!-- Optional: Client-side JS for detail panel etc. -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-
-  // Lead card click functionality
-  document.querySelectorAll('.lead-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const data = {
-        id: card.dataset.id,
-        name: card.dataset.name,
-        email: card.dataset.email,
-        phone: card.dataset.phone,
-        pickup: card.dataset.pickup,
-        destination: card.dataset.destination,
-        departureDate: card.dataset.departureDate,
-        departureTime: card.dataset.departureTime,
-        returnDate: card.dataset.returnDate,
-        returnTime: card.dataset.returnTime,
-        passengers: card.dataset.passengers,
-        priceEstimate: card.dataset.priceEstimate,
-        submitDate: card.dataset.submitDate,
-        fromStops: JSON.parse(card.dataset.fromStops || "[]"),
-        toStops: JSON.parse(card.dataset.toStops || "[]")
-      };
-      updateLeadDetails(data);
-    });
-  });
-
   // Search functionality
-  const searchInput = document.getElementById('leadSearch');
+  const searchInput = document.querySelector('input[placeholder="Search leads"]');
+  const allLeadCards = document.querySelectorAll('.lead-card'); 
+
   searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    document.querySelectorAll('.lead-card').forEach(card => {
+    const query = searchInput.value.toLowerCase().trim();
+    allLeadCards.forEach(card => {
       const name = card.dataset.name?.toLowerCase() || '';
-      const email = card.dataset.email?.toLowerCase() || '';
       const pickup = card.dataset.pickup?.toLowerCase() || '';
       const destination = card.dataset.destination?.toLowerCase() || '';
-      
-      if (name.includes(query) || email.includes(query) || pickup.includes(query) || destination.includes(query)) {
-        card.style.display = 'flex';
-      } else {
-        card.style.display = 'none';
-      }
+      const email = card.dataset.email?.toLowerCase() || '';
+      const phone = card.dataset.phone?.toLowerCase() || '';
+      card.style.display = (name.includes(query) || pickup.includes(query) || destination.includes(query) || email.includes(query) || phone.includes(query)) ? 'flex' : 'none';
     });
   });
 
-});
+  // Filter buttons
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const otherLeadCards = document.querySelectorAll('#other-leads .lead-card');
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const status = btn.textContent.trim();
+      filterButtons.forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-outline-primary'); });
+      btn.classList.remove('btn-outline-primary');
+      btn.classList.add('btn-primary');
+
+      const container = document.querySelector('#other-leads');
+      otherLeadCards.forEach(card => {
+        if (status === 'All' || card.dataset.status === status) {
+          card.style.display = 'flex';
+          container.prepend(card);
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
 </script>
-
-
-
-
-

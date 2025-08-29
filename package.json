@@ -15,6 +15,7 @@
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
     "ejs": "^3.1.10",
     "emailjs": "^4.0.3",
@@ -22,8 +23,12 @@
     "express-session": "^1.18.2",
     "mongoose": "^8.16.3",
     "nodemailer": "^7.0.5",
-    "nodemon": "^3.1.10",
     "session": "^0.1.0",
     "twilio": "^5.8.0"
+  },
+  "devDependencies": {
+    "connect-livereload": "^0.6.1",
+    "livereload": "^0.10.3",
+    "nodemon": "^3.1.10"
   }
 }

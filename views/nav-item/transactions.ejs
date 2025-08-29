@@ -50,11 +50,15 @@
 
         <!-- Date + Time -->
         <div class="text-sm whitespace-nowrap mr-3 font-semibold">
-          <span><%= String(new Date(timing.departureDate).getDate()).padStart(2,'0') %> 
-            <%= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(timing.departureDate).getMonth()] %> 
-            <%= new Date(timing.departureDate).getFullYear() %>
-          </span>
-          <span class="text-gray-500 text-xs"> <%= timing.departureTime %></span>
+          <span>
+          <%= timing && timing.departureDate 
+                ? String(new Date(timing.departureDate).getDate()).padStart(2,'0') + 
+                  ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date(timing.departureDate).getMonth()] +
+                  ' ' + new Date(timing.departureDate).getFullYear()
+                : '--/--/----' 
+          %>
+        </span>
+          <span class="text-gray-500 text-xs"> <%= timing && timing.departureTime ? timing.departureTime : '--:--' %></span>
         </div>
 
         <!-- Passenger Name -->

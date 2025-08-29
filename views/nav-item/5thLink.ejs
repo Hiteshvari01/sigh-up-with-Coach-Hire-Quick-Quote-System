@@ -61,7 +61,7 @@
   <div id="mainContent" class="transition-all">
     <!-- Dashboard Content -->
     <div id="dashboardSection">
-      <%- include('ErchivedLead', { admin: admin }) %>
+      <%- include('ErchivedLead', { admin: admin,detailedTrips: detailedTrips }) %>
     </div>
 
     <!-- Detail Panel -->
@@ -109,6 +109,8 @@
 
         card.addEventListener('click', () => {
           const data = {
+            status: card.dataset.status,
+      tripType:card.dataset.tripType,
             id: card.dataset.id,
             name: card.dataset.name,
             email: card.dataset.email,

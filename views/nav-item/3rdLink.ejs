@@ -12,16 +12,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
   <style>
-    body {
-      overflow-x: hidden;
-      transition: padding-left 0.5s ease;
-    }
+    body { overflow-x: hidden; transition: padding-left 0.5s ease; }
+
     @media (min-width: 992px) {
-      body.dashboard-collapsed .lead-card { padding: 6px 10px; }
-      body.dashboard-collapsed .lead-info,
-      body.dashboard-collapsed .lead-meta { gap: 4px; }
-      body.dashboard-collapsed .lead-info span,
-      body.dashboard-collapsed .lead-meta span { font-size: 0.85rem; }
       body { padding-left: 227px; }
       body.sidebar-collapsed { padding-left: 80px !important; }
       #sidebar.collapsed ~ #mainContent { margin-left: 0 !important; }
@@ -34,11 +27,9 @@
         transition: width 0.3s ease;
         display: block;
       }
-      #detailSection.show {
-        width: 50%;
-        overflow-y: auto;
-      }
+      #detailSection.show { width: 50%; overflow-y: auto; }
     }
+
     @media (max-width: 991.98px) {
       body { padding-left: 0; }
       #dashboardSection, #detailSection { width: 100% !important; }
@@ -47,8 +38,11 @@
       #detailSection { display: none !important; }
       #detailSection.show-on-mobile { display: block !important; }
     }
+
     #sidebar.collapsed { width: 50px !important; }
-    #sidebar.collapsed .nav-link span, #sidebar.collapsed #sidebar-name { display: none !important; }
+    #sidebar.collapsed .nav-link span,
+    #sidebar.collapsed #sidebar-name { display: none !important; }
+
     #mainContent { display: flex; flex-wrap: nowrap; transition: margin-left 0.5s ease; height: 100vh; }
   </style>
 </head>
@@ -61,13 +55,11 @@
   <div id="mainContent" class="transition-all">
     <!-- Dashboard Content -->
     <div id="dashboardSection">
-      <%- include('users', { admin: admin }) %>
+      <%- include('users.ejs', { admin: admin }) %>
     </div>
 
     <!-- Detail Panel -->
-    <div id="detailSection">
-      <%- include('users-details', { detailedTrips: detailedTrips }) %>
-    </div>
+    <div id="detailSection"></div>
   </div>
 
   <!-- Bootstrap JS -->
@@ -75,93 +67,118 @@
 
   <!-- Pass detailedTrips to client-side JS -->
   <script>
-    
+    const detailedTrips = <%- JSON.stringify(detailedTrips) %>;
   </script>
 
-  <!-- Responsive Toggle & Random Price Script -->
   <script>
     function getRandomPrice(min = 300, max = 500) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function updateBodyPadding() {
+      const sidebar = document.getElementById('sidebar');
+      if(window.innerWidth >= 992){
+        document.body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+      } else {
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    function updateLeadDetails(trips) {
+      const detailSection = document.getElementById('detailSection');
+      detailSection.innerHTML = '';
+
+      // Panel wrapper
+      const wrapper = document.createElement('div');
+      wrapper.className = 'w-full bg-white rounded-[30px] shadow-xl p-6';
+
+      // Header with close button
+      const header = document.createElement('div');
+header.className = 'relative flex items-center justify-center mb-4'; // center title
+
+      // Close button (absolute left)
+const closeBtn = document.createElement('button');
+closeBtn.id = 'closeDetail';
+closeBtn.className = 'bg-[#F0F2F4] rounded-[100px] w-10 p-2 absolute left-0 bg-[#F0F2F4] rounded-[100px] w-10 h-10 p-2 flex items-center justify-center';
+closeBtn.innerHTML = `<i class="bi bi-x-lg text-black"></i>`;
+closeBtn.addEventListener('click', () => {
+    detailSection.classList.remove('show', 'show-on-mobile');
+    document.getElementById('dashboardSection').classList.remove('hide-on-mobile');
+    document.body.classList.remove('dashboard-collapsed');
+    document.getElementById('sidebar').classList.remove('collapsed');
+    document.getElementById('dashboardSection').style.width = '100%';
+    updateBodyPadding();
+});
+
+
+      const headerTitle = document.createElement('div');
+      headerTitle.className = 'flex items-center gap-2 text-[#007BE5] font-medium text-base';
+      headerTitle.innerHTML = `<i class="fas fa-clipboard text-[#007BE5] text-lg"></i><span>Trips</span>`;
+
+      header.appendChild(closeBtn);
+      header.appendChild(headerTitle);
+      wrapper.appendChild(header);
+
+      // Add trip cards
+      trips.forEach((tripObj, index) => {
+        const { trip, goingStops, timing, user } = tripObj;
+
+        const tripDiv = document.createElement('div');
+        tripDiv.className = 'w-full bg-white rounded-[20px] shadow-md p-4 mb-4';
+        tripDiv.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-[#007BE5]">Trip ${index + 1}</span>
+          </div>
+          <h6 class="font-bold mb-1">${user.fullName}</h6>
+          <p class="text-gray-600 text-sm mb-1"><strong>Pickup:</strong> ${trip.pickupLocation} → <strong>Destination:</strong> ${trip.destinationLocation}</p>
+          <p class="text-gray-600 text-sm mb-1"><strong>Departure:</strong> ${timing.departureDate} ${timing.departureTime}</p>
+          <p class="text-gray-600 text-sm mb-1"><strong>Return:</strong> ${timing.returnDate || '-'} ${timing.returnTime || '-'}</p>
+          <p class="text-gray-600 text-sm mb-1"><strong>Passengers:</strong> ${trip.numberOfPeople}</p>
+          <p class="text-gray-600 text-sm mb-0"><strong>Stops:</strong> ${goingStops.map(s => s.location).join(', ') || '-'}</p>
+        `;
+        wrapper.appendChild(tripDiv);
+      });
+
+      detailSection.appendChild(wrapper);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       const sidebar = document.getElementById('sidebar');
       const dashboardSection = document.getElementById('dashboardSection');
       const detailSection = document.getElementById('detailSection');
-      const closeBtn = document.getElementById('closeDetail');
-      const body = document.body;
 
-      function updateBodyPadding() {
-        if (window.innerWidth >= 992) {
-          body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-        } else {
-          body.classList.remove('sidebar-collapsed');
-        }
-      }
-
-      // Assign random price to each lead card
+      // Lead card click
       document.querySelectorAll('.lead-card').forEach(card => {
-        if (!card.dataset.priceEstimate) {
-          card.dataset.priceEstimate = getRandomPrice();
-        }
-
-        // Update price visually in the card
-        const priceDiv = card.querySelector('.text-success');
-        if (priceDiv) {
-          priceDiv.textContent = '€' + card.dataset.priceEstimate;
-        }
-
+        card.dataset.priceEstimate = getRandomPrice();
         card.addEventListener('click', () => {
-          const data = {
-            id: card.dataset.id,
-            name: card.dataset.name,
-            email: card.dataset.email,
-            phone: card.dataset.phone,
-            pickup: card.dataset.pickup,
-            destination: card.dataset.destination,
-            departureDate: card.dataset.departureDate,
-            departureTime: card.dataset.departureTime,
-            returnDate: card.dataset.returnDate,
-            returnTime: card.dataset.returnTime,
-            passengers: card.dataset.passengers,
-            priceEstimate: card.dataset.priceEstimate,
-            submitDate: card.dataset.submitDate,
-            fromStops: JSON.parse(card.dataset.fromStops || "[]"),
-            toStops: JSON.parse(card.dataset.toStops || "[]")
-          };
+          const email = card.dataset.email;
+          const userTrips = detailedTrips.filter(item => item.user?.email === email);
 
-          // Show detail panel
           if (window.innerWidth >= 992) {
-            body.classList.add('dashboard-collapsed');
+            document.body.classList.add('dashboard-collapsed');
             sidebar.classList.add('collapsed');
             dashboardSection.style.width = '50%';
             detailSection.classList.add('show');
           } else {
             dashboardSection.classList.add('hide-on-mobile');
-            detailSection.classList.add('show-on-mobile'); 
+            detailSection.classList.add('show-on-mobile');
           }
           updateBodyPadding();
-
-          // Populate detail panel
-          updateLeadDetails(data);
+          updateLeadDetails(userTrips);
         });
       });
 
-      // Close detail panel
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          if (window.innerWidth >= 992) {
-            body.classList.remove('dashboard-collapsed');
-            sidebar.classList.remove('collapsed');
-            dashboardSection.style.width = '100%';
-            detailSection.classList.remove('show');
-          } else {
-            dashboardSection.classList.remove('hide-on-mobile');
-            detailSection.classList.remove('show-on-mobile');
-          }
-          updateBodyPadding();
+      // Search functionality
+      const searchInput = document.querySelector('input[placeholder="Search leads"]');
+      const allLeadCards = document.querySelectorAll('.lead-card');
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        allLeadCards.forEach(card => {
+          const name = card.dataset.name?.toLowerCase() || '';
+          const email = card.dataset.email?.toLowerCase() || '';
+          card.style.display = (name.includes(query) || email.includes(query)) ? 'flex' : 'none';
         });
-      }
+      });
 
       window.addEventListener('resize', updateBodyPadding);
       updateBodyPadding();

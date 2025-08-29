@@ -1,0 +1,44 @@
+<div class="bg-white p-6 rounded-lg shadow-xl max-w-xl mx-auto my-10">
+
+    <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center space-x-2">
+      <span class="material-icons text-gray-500 cursor-pointer">close</span>
+      <span class="material-icons text-blue-500 cursor-pointer">edit</span>
+      <h2 class="text-xl font-semibold text-gray-800">Quotation Accepted</h2>
+    </div>
+  </div>
+
+    <div class="mb-4">
+    <label for="subject" class="block text-gray-700 font-medium mb-1">Subject</label>
+    <input type="text" id="accepted-subject" name="accepted-subject" 
+         class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+         value="Your Quotation has been accepted">
+  </div>
+
+    <div class="mb-6">
+    <label for="message" class="block text-gray-700 font-medium mb-1">Message Content</label>
+    <textarea id="accepted-message" name="accepted-message" rows="8"
+              class="w-full border border-gray-300 rounded-md p-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+Hello {name},
+
+We are pleased to inform you that your quotation has been accepted.
+
+Thank you for choosing our service.
+
+Best regards,
+DaveLongCoach Team
+</textarea>
+  </div>
+
+    <div class="bg-gray-100 p-4 rounded-md mb-6">
+    <h4 class="text-xs font-semibold uppercase text-gray-500 mb-2">Template Variables</h4>
+    <p class="text-sm text-gray-600 mb-2">Variables in curly braces will be replaced with actual values when the email is sent.</p>
+    <p class="text-sm font-mono text-gray-500">{name}, {pickup_location}, {dropoff_location}, {quotation.id}, {round_trip_text}, {number_of_passengers}</p>
+  </div>
+
+    <div class="flex justify-end space-x-4">
+    <button type="button" class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-200">Cancel</button>
+    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Changes</button>
+  </div>
+
+</div>

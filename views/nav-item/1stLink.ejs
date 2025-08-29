@@ -178,6 +178,8 @@ document.querySelectorAll('.lead-card').forEach(card => {
   card.addEventListener('click', () => {
     // Lead data
     const data = { 
+      status: card.dataset.status,
+      tripType:card.dataset.tripType,
       id: card.dataset.id,
       name: card.dataset.name,
       email: card.dataset.email,

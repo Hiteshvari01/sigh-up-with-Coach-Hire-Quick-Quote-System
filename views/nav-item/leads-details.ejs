@@ -5,38 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lead Card</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
   <style>
-    body {
-      background-color: #f2f2f2;
-    }
+    body { background-color: #f2f2f2; }
     @keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.animate-slide-in {
-  animation: slide-in 0.5s ease-out;
-}
-  
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slide-in { animation: slide-in 0.5s ease-out; }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
-    <!-- ✅ Alert Box -->
 <div id="toastBox" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
-  <div id="leadCardContainer" class="p-4"></div>
+<div id="leadCardContainer" class="p-4"></div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+const BUS_SPEED_KMH = 80;
 
-const BUS_SPEED_KMH = 80; // highway bus average speed
-
-// Duration calculation based on distance and speed
+// Duration calculation
 function calculateDurationByDistance(distanceKm, speedKmh = BUS_SPEED_KMH) {
     if(!distanceKm || isNaN(distanceKm)) return '-';
     const durationHours = distanceKm / speedKmh;
@@ -45,59 +37,16 @@ function calculateDurationByDistance(distanceKm, speedKmh = BUS_SPEED_KMH) {
     return `${hours}h ${minutes}m`;
 }
 
-// Function to convert city name to lat/lng using Nominatim (OpenStreetMap) geocoding
-async function getCoordinates(place) {
-    try {
-        const res = await axios.get('https://nominatim.openstreetmap.org/search', {
-            params: {
-                q: place,
-                format: 'json',
-                limit: 1
-            }
-        });
-        if(res.data.length > 0) {
-            return { lat: res.data[0].lat, lon: res.data[0].lon };
-        } else {
-            return null;
-        }
-    } catch(err) {
-        console.error('Geocoding error:', err);
-        return null;
-    }
-}
-
-// Distance fetch using OSRM API
-async function getDistance(fromPlace, toPlace) {
-    const fromCoords = await getCoordinates(fromPlace);
-    const toCoords = await getCoordinates(toPlace);
-    if(!fromCoords || !toCoords) return '-';
-
-    try {
-        const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=false`;
-        const res = await axios.get(url);
-        if(res.data.code === "Ok" && res.data.routes.length > 0) {
-            const route = res.data.routes[0];
-            const distanceKm = (route.distance / 1000).toFixed(2);
-            return distanceKm;
-        } else {
-            return '-';
-        }
-    } catch(err) {
-        console.error('OSRM error:', err);
-        return '-';
-    }
-}
-
 // Toast notification
 function showToast(message, type) {
     const toastBox = document.getElementById("toastBox");
     const toast = document.createElement("div");
     toast.className = "flex items-center px-3 py-2 rounded-lg shadow-md text-sm bg-white border animate-slide-in";
     toast.innerHTML = `
-      <span class="mr-2 ${type==="success"?"text-green-600":"text-red-600"}">
-        ${type==="success"?"✔️":"❌"}
-      </span>
-      <span class="text-gray-800">${message}</span>
+        <span class="mr-2 ${type==="success"?"text-green-600":"text-red-600"}">
+            ${type==="success"?"✔️":"❌"}
+        </span>
+        <span class="text-gray-800">${message}</span>
     `;
     toastBox.appendChild(toast);
     setTimeout(() => {
@@ -106,141 +55,124 @@ function showToast(message, type) {
     }, 3000);
 }
 
-// Update lead details dynamically using OSRM distances
-async function updateLeadDetails(data) {
-    document.getElementById('detailPickup').innerText = data.pickup || '-';
-    document.getElementById('detailDestination').innerText = data.destination || '-';
-    document.getElementById('detailDate').innerText = data.departureDate || '-';
-    document.getElementById('detailDepartureTime').innerText = data.departureTime || '-';
-    document.getElementById('detailReturnDate').innerText = data.returnDate || 'No return trip ';
-    document.getElementById('detailReturnTime').innerText = data.returnTime || 'one-way trip only';
-    document.getElementById('detailPeople').innerText = data.passengers || '-';
-    document.getElementById('detailPrice').innerText = data.priceEstimate || '-';
-    document.getElementById("detailfromStops").innerHTML = data.fromStops?.length 
-    ? data.fromStops.map(s => `${s.location} (${s.duration||'-'})`).join(", ") 
-    : 'No going stops added';
-
-document.getElementById("detailtoStops").innerHTML = data.toStops?.length 
-    ? data.toStops.map(s => `${s.location} (${s.duration||'-'})`).join(", ") 
-    : 'No return stops added';
-
-    document.getElementById("detailName").innerText = data.name || '-';
-    document.getElementById("detailEmail").innerText = data.email || '-';
-    document.getElementById("detailPhone").innerText = data.phone || '-';
-    document.getElementById("detailId").innerText = data.id || '-';
-    document.getElementById("detailSubmitDate").innerText = data.submitDate || '-';
-
-    // Distance & duration using OSRM
-    const distanceKm = await getDistance(data.pickup, data.destination);
-    document.getElementById("detailDistance").innerText = distanceKm !== '-' ? distanceKm + " km" : '-';
-    document.getElementById("detailDuration").innerText = calculateDurationByDistance(distanceKm);
-    document.getElementById('acceptBtn').dataset.leadid = data.id;
-    document.getElementById('rejectBtn').dataset.leadid = data.id;
-
+// Status badge
+function createStatusBadge(status) {
+    const badgeContainer = document.getElementById("statusBadgeContainer");
+    if(status === 'Accepted') {
+        badgeContainer.innerHTML = `<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-semibold bg-green-500">
+            <span>✔️</span><span>Accepted</span></div>`;
+    } else if(status === 'Rejected') {
+        badgeContainer.innerHTML = `<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-semibold bg-red-500">
+            <span>❌</span><span>Rejected</span></div>`;
+    } else {
+        badgeContainer.innerHTML = '';
+    }
 }
-  // Render lead card HTML
-  document.getElementById("leadCardContainer").innerHTML = `
-  
-  <div class="w-full bg-white rounded-[30px] shadow-xl p-6">
-    <div class="flex items-center justify-between mb-4">
-      <button id="closeDetail" class="bg-[#F0F2F4] rounded-[100px]  w-10 p-2 ">
-        <i class="fas fa-times text-black text-sm"></i>
-      </button>
-      <div class="flex items-center gap-2 text-[#007BE5] font-medium text-base">
-        <i class="fas fa-clipboard text-[#007BE5] text-lg"></i>
-        <span>New Lead</span>
-      </div>
-      <span class="w-"></span>
+
+// Toggle action buttons
+function toggleActionButtons(show) {
+    const actionButtons = document.getElementById('actionButtons');
+    if(show) actionButtons.classList.remove('hidden');
+    else actionButtons.classList.add('hidden');
+}
+
+// Toggle Delete / Restore buttons
+function toggleDeleteRestoreButtons(status) {
+    const deleteBtn = document.getElementById('deleteBtn');
+    const restoreBtn = document.getElementById('restoreBtn');
+    if(status === 'Deleted') {
+        deleteBtn.style.display = 'none';
+        restoreBtn.style.display = 'inline-block';
+    } else {
+        deleteBtn.style.display = 'inline-block';
+        restoreBtn.style.display = 'none';
+    }
+}
+
+// Render lead card HTML
+document.getElementById("leadCardContainer").innerHTML = `
+<div class="w-full bg-white rounded-[30px] shadow-xl p-6">
+  <!-- header -->
+  <div class="flex items-center justify-between mb-4">
+    <button id="closeDetail" class="bg-[#F0F2F4] rounded-[100px] w-10 p-2 ">
+      <i class="fas fa-times text-black text-sm"></i>
+    </button>
+    <div class="flex items-center gap-2 text-[#007BE5] font-medium text-base">
+      <i class="fas fa-clipboard text-[#007BE5] text-lg"></i>
+      <span>New Lead</span>
     </div>
+  </div>
 
-    <div class="flex gap-3">
-      <div class="flex flex-col items-center pt-1 relative">
-        <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
-        <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
-        <div class="bg-[#007BE5] rounded-full p-1">
-          <div class="bg-[#007BE5] rounded-full p-1">
-            <i class="bi bi-arrow-up text-white"></i><i class="bi bi-arrow-down text-white "></i>
-
-
-          </div>
-        </div>
-        <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
-        <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
+  <!-- trip info -->
+  <div class="flex gap-3">
+    <div class="flex flex-col items-center pt-1 relative">
+      <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
+      <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
+      <div class="bg-[#007BE5] rounded-full p-1" id="tripIconContainer">
+        <i class="bi bi-arrow-up text-white"></i>
       </div>
-
-      <div class="flex-1">
-        <div class="flex justify-between">
-          <div>
-            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">From</p>
-            <p class="text-[22px] font-semibold leading-5"><span id="detailPickup">-</span></p>
-            <div id="detailfromStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
-          </div>
-          <div class="text-end">
-            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Depart</p>
-            <p class="text-[16px] font-semibold"><span id="detailDate">-</span></p>
-            <p class="text-[16px]" id="detailDepartureTime">-</p>
-          </div>
+      <div class="flex-1 w-[2px] bg-[#007BE5] my-1"></div>
+      <div class="w-2 h-2 bg-[#007BE5] rounded-full"></div>
+    </div>
+    <div class="flex-1">
+      <div class="flex justify-between">
+        <div>
+          <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">From</p>
+          <p class="text-[22px] font-semibold leading-5"><span id="detailPickup">-</span></p>
+          <div id="detailfromStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
         </div>
-
-        <div class="flex justify-between mt-5">
-          <div>
-            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">To</p>
-            <p class="text-[22px] font-semibold leading-5"><span id="detailDestination">-</span></p>
-            <div id="detailtoStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
-          </div>
-          <div class="text-end ">
-            <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Return</p>
+        <div class="text-end">
+          <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Depart</p>
+          <p class="text-[16px] font-semibold"><span id="detailDate">-</span></p>
+          <p class="text-[16px]" id="detailDepartureTime">-</p>
+        </div>
+      </div>
+      <div class="flex justify-between mt-5">
+        <div>
+          <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">To</p>
+          <p class="text-[22px] font-semibold leading-5"><span id="detailDestination">-</span></p>
+          <div id="detailtoStops" class="text-[14px] text-[#3D3F43] mt-1"></div>
+        </div>
+        <div class="text-end">
+          <p class="text-[12px] text-[#6D7178] font-medium uppercase mb-1">Return</p>
           <p class="text-[16px] font-semibold"><span id="detailReturnDate">-</span></p>
-            <p class="text-[16px]" id="detailReturnTime">-</p>
-          </div>
+          <p class="text-[16px]" id="detailReturnTime">-</p>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="border-t border-[#D3D9DF] my-4"></div>
+  <div class="border-t border-[#D3D9DF] my-4"></div>
 
-    <div class="flex justify-between text-sm">
-      <div>
-        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Passengers</p>
-        <p class="text-[20px] font-semibold"><span id="detailPeople">-</span></p>
-      </div>
-      <div>
-        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Total Distance</p>
-        <p class="text-[20px] font-semibold"><span id="detailDistance">-</span></p>
-      </div>
-      <div>
-        <p class="text-[#6D7178] uppercase font-medium text-[12px]">Duration</p>
-        <p class="text-[20px] font-semibold"><span id="detailDuration">-</span></p>
-      </div>
-       
-
+  <!-- passenger / distance / duration -->
+  <div class="flex justify-between text-sm">
+    <div>
+      <p class="text-[#6D7178] uppercase font-medium text-[12px]">Passengers</p>
+      <p class="text-[20px] font-semibold"><span id="detailPeople">-</span></p>
     </div>
-   <!-- Price Estimate -->
+    <div>
+      <p class="text-[#6D7178] uppercase font-medium text-[12px]">Total Distance</p>
+      <p class="text-[20px] font-semibold"><span id="detailDistance">-</span></p>
+    </div>
+    <div>
+      <p class="text-[#6D7178] uppercase font-medium text-[12px]">Duration</p>
+      <p class="text-[20px] font-semibold"><span id="detailDuration">-</span></p>
+    </div>
+  </div>
+
+  <!-- price -->
   <div class="flex justify-between items-center text-sm bg-[#e7f0fe] p-2 rounded-lg mt-4">
     <p class="text-[10px] sm:text-[12px] text-[#6D7178] uppercase font-medium">Price Estimate</p>
     <p class="bg-white rounded-lg px-2 py-1 text-black uppercase font-medium text-[10px] sm:text-[12px]" id="detailPrice">-</p>
   </div>
 
-  <!-- Additional Info -->
-  <div class="p-4 bg-[#f1f3f6] rounded-lg mt-4">
-    <h6 class="font-semibold mb-2">Additional Information</h6>
-    <p class="text-sm mb-2">We’re looking for a comfortable and reliable vehicle for the journey, ideally with air conditioning and storage space for bags. Please also let us know about any additional costs, such as tolls or parking fees.</p>
-    <p class="mb-2">Damien <span class="text-xs">12:30</span></p>
-    <p class="text-sm text-[#7a7c81] mb-4">Could you please confirm if you’ll need a child seat, wheelchair access, or any special accommodations on board? Also, will there be any large luggage or equipment we should plan space for?</p>
-    <button class="flex items-center gap-2 px-3 py-2 border border-[#007BE5] text-[#007BE5] rounded-full text-sm font-medium hover:bg-[#007BE5] hover:text-white transition">
-      <i class="fa-regular fa-comment text-lg"></i>
-      <span class="hidden sm:inline">Send a message</span>
-    </button>
-  </div>
-
-  <!-- Customer Info -->
+  <!-- customer -->
   <div class="p-4 rounded-lg mt-4">
     <h6 class="font-semibold mb-2">Customer</h6>
     <p>Name: <strong><span id="detailName">-</span></strong></p>
     <p>Email: <a href="#" class="text-blue-600 underline"><strong><span id="detailEmail">-</span></strong></a></p>
     <p>Phone: <a href="#" class="text-blue-600 underline"><strong><span id="detailPhone">-</span></strong></a></p>
 
-    <!-- Lead Info -->
     <div class="flex flex-col sm:flex-row justify-between bg-[#f0f2f4] p-3 rounded-lg mt-4 gap-2 sm:gap-4">
       <div>
         <p class="text-[10px] sm:text-[12px] text-[#6D7178] font-medium mb-1">Lead ID</p>
@@ -250,39 +182,22 @@ document.getElementById("detailtoStops").innerHTML = data.toStops?.length
         <p class="text-[10px] sm:text-[12px] text-[#6D7178] font-medium mb-1">Submitted On</p>
         <p class="text-[10px] sm:text-[12px] text-[#2e3032] font-semibold leading-5"><span id="detailSubmitDate">-</span></p>
       </div>
-      <div>
-        <% if (detailedTrips && detailedTrips.length > 0) { %>
-          <button type="submit" class=" delete-btn bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-        <% } else { %>
-          <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded delete-btn">Delete</button>
-        <% } %>
+
+      <div id="leadActionBtnContainer">
+        <button id="deleteBtn" class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+        <button id="restoreBtn" class="bg-green-500 text-white px-3 py-1 rounded">Restore</button>
       </div>
     </div>
   </div>
 
-  <!-- Action Buttons -->
-  <div class="flex sm:flex-row justify-between items-center mt-4 gap-2">
-    <button class="flex items-center gap-2 px-4 py-2 border border-[#007BE5] text-[#007BE5] rounded-full text-sm font-medium hover:bg-[#007BE5] hover:text-white transition">
-      <i class="fas fa-envelope"></i>
-      Request more information
-    </button>
-    <button class="bg-[#007BE5] p-2 rounded-full w-12 text-white">
-      <i class="fas fa-briefcase"></i>
-    </button>
+  <div class="flex flex-col sm:flex-row gap-2 mt-4" id="actionButtons">
+    <button id="acceptBtn" class="accept-btn w-full bg-green-500 text-white py-2 rounded-full text-lg font-semibold hover:bg-green-600 transition">Accept</button>
+    <button id="rejectBtn" class="reject-btn w-full bg-red-500 text-white py-2 rounded-full text-lg font-semibold hover:bg-red-600 transition">Reject</button>
   </div>
 
-  <!-- Accept/Reject Buttons -->
-  <div class="flex flex-col sm:flex-row gap-2 mt-4">
-   <button id="acceptBtn" class="accept-btn w-full bg-green-500 text-white py-2 rounded-full text-lg font-semibold hover:bg-green-600 transition">
-    Accept
-</button>
-<button id="rejectBtn" class="reject-btn w-full bg-red-500 text-white py-2 rounded-full text-lg font-semibold hover:bg-red-600 transition">
-    Reject
-</button>
-  </div>
-
+  <div id="statusBadgeContainer" class="mt-4 text-center"></div>
 </div>
-<!-- Confirmation Modal -->
+
 <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
   <div class="bg-white rounded-lg p-6 w-80 text-center">
     <p class="mb-4 font-medium">Are you sure you want to delete this lead?</p>
@@ -292,122 +207,149 @@ document.getElementById("detailtoStops").innerHTML = data.toStops?.length
     </div>
   </div>
 </div>
+`;
 
+// ======= BUTTON LOGIC =======
 
-  
-  `;
-
-const deleteBtn = document.querySelector('.delete-btn');
+const deleteBtn = document.getElementById('deleteBtn');
 const confirmModal = document.getElementById('confirmModal');
 const confirmDelete = document.getElementById('confirmDelete');
 const cancelDelete = document.getElementById('cancelDelete');
 
-deleteBtn.addEventListener('click', () => {
-    confirmModal.classList.remove('hidden'); // Show modal
-});
+deleteBtn.addEventListener('click', () => confirmModal.classList.remove('hidden'));
+cancelDelete.addEventListener('click', () => confirmModal.classList.add('hidden'));
 
-cancelDelete.addEventListener('click', () => {
-    confirmModal.classList.add('hidden'); // Hide modal
-});
-
+// DELETE LEAD
 confirmDelete.addEventListener('click', async () => {
-    confirmModal.classList.add('hidden'); // Hide modal
+    confirmModal.classList.add('hidden');
+    const tripId = document.getElementById('detailId').innerText.trim();
+    if(!tripId) return showToast("Lead ID not found", "error");
+
+    try {
+        const res = await fetch(`/delete-lead/${tripId}`, { method:'DELETE', headers:{'Content-Type':'application/json'} });
+        const data = await res.json();
+        if(data.success){
+            showToast("Lead deleted successfully", "success");
+            toggleDeleteRestoreButtons('Deleted');
+        } else showToast(data.message || "Failed to delete lead", "error");
+    } catch(err){ console.error(err); showToast("Server error while deleting lead","error"); }
+});
+
+// RESTORE LEAD
+document.getElementById('restoreBtn').addEventListener('click', async () => {
     const tripId = document.getElementById('detailId').innerText.trim();
     if (!tripId) return showToast("Lead ID not found", "error");
 
     try {
-        const res = await fetch(`/delete-lead/${tripId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+        const res = await fetch(`/restore-lead/${tripId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
         const data = await res.json();
 
         if (data.success) {
-            showToast("Lead deleted successfully", "success");
-            document.getElementById('leadCardContainer').innerHTML = '';
-            window.location.href = '/1stLink';
+            showToast("Lead restored successfully", "success");
+
+            // 1️⃣ Hide restore button, show delete button again
+            toggleDeleteRestoreButtons('Restored');
+
+            // 2️⃣ Remove lead from Archived list (DOM) dynamically
+            const archivedLeadElement = document.querySelector(`#lead-${tripId}`);
+            if (archivedLeadElement) archivedLeadElement.remove();
+
+            // 3️⃣ Optional: Update status badge in detail view
+            createStatusBadge('Pending');
         } else {
-            showToast(data.message || "Failed to delete lead", "error");
+            showToast(data.message || "Failed to restore lead", "error");
         }
     } catch (err) {
-        console.error(err);
-        showToast("Server error while deleting lead", "error");
+        console.error("Frontend restore error:", err);
+        showToast("Server error while restoring lead", "error");
     }
 });
 
 
 
-document.getElementById('acceptBtn').addEventListener('click', (e) => {
-  const leadId = e.target.dataset.leadid;
-  updateStatus(leadId, 'Accepted');
-});
+// ACCEPT / REJECT LEAD
+document.getElementById('acceptBtn').addEventListener('click', () => updateLeadStatus('Accepted'));
+document.getElementById('rejectBtn').addEventListener('click', () => updateLeadStatus('Rejected'));
 
-document.getElementById('rejectBtn').addEventListener('click', (e) => {
-  const leadId = e.target.dataset.leadid;
-  updateStatus(leadId, 'Rejected');
-});
+function updateLeadStatus(newStatus){
+    const leadId = document.getElementById('detailId').innerText.trim();
+    if(!leadId) return showToast("Lead ID not found","error");
 
-function updateStatus(leadId, newStatus) {
-  if(!leadId) return console.error("leadId is undefined!");
-
-  fetch('/update-lead-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ leadId, status: newStatus })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      const card = document.querySelector(`.lead-card[data-id="${leadId}"]`);
-      if(card){
-        card.dataset.status = newStatus;
-
-        // Update badge
-        const badge = card.querySelector('.badge');
-        badge.className = 'badge ' + (
-          newStatus === 'Accepted' ? 'bg-success' :
-          newStatus === 'Rejected' ? 'bg-danger' :
-          newStatus === 'Scheduled' ? 'bg-primary text-light' :
-          'bg-warning text-dark'
-        );
-        badge.innerText = newStatus;
-
-        // Update icon
-        const iconEl = card.querySelector('i, span.material-icons');
-        if(iconEl){
-          if(newStatus === 'Accepted'){
-            iconEl.outerHTML = '<span class="material-icons text-success">check_circle</span>';
-          } else if(newStatus === 'Rejected'){
-            iconEl.outerHTML = '<i class="bi bi-x-circle-fill text-danger" style="font-size:20px;"></i>';
-          } else if(newStatus === 'Scheduled'){
-            iconEl.outerHTML = '<i class="bi bi-clock-history text-primary" style="font-size:20px;"></i>';
-          } else { // Pending
-            iconEl.outerHTML = '<i class="bi bi-hourglass-split text-warning" style="font-size:20px;"></i>';
-          }
-        }
-
-        // Move card to correct container
-        const pendingContainer = document.getElementById('pending-leads');
-        const otherContainer = document.getElementById('other-leads');
-
-        if(newStatus === 'Pending'){
-          pendingContainer.prepend(card); // Put on top
-        } else {
-          otherContainer.appendChild(card); // Put below tabs
-        }
-      }
-
-      showToast(`Status changed to ${newStatus}`, newStatus === 'Rejected' ? 'error' : 'success');
-
-    } else {
-      showToast(data.message || "Failed to update status", "error");
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    showToast("Server error while updating status", "error");
-  });
+    fetch('/update-lead-status',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ leadId, status: newStatus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            createStatusBadge(newStatus);
+            toggleActionButtons(false);
+            showToast(`Status changed to ${newStatus}`, newStatus==='Rejected'?'error':'success');
+            toggleDeleteRestoreButtons(newStatus);
+        } else showToast(data.message || "Failed to update status","error");
+    })
+    .catch(err=>{ console.error(err); showToast("Server error while updating status","error"); });
 }
 
+// ======= DYNAMIC LEAD DATA UPDATE FUNCTION =======
+async function updateLeadDetails(data){
+    document.getElementById('detailPickup').innerText = data.pickup || '-';
+    document.getElementById('detailDestination').innerText = data.destination || '-';
+    document.getElementById('detailDate').innerText = data.departureDate || '-';
+    document.getElementById('detailDepartureTime').innerText = data.departureTime || '-';
+    document.getElementById('detailReturnDate').innerText = data.returnDate || 'No return trip';
+    document.getElementById('detailReturnTime').innerText = data.returnTime || 'one-way only';
+    document.getElementById('detailPeople').innerText = data.passengers || '-';
+    document.getElementById('detailPrice').innerText = data.priceEstimate || '-';
+    document.getElementById('detailName').innerText = data.name || '-';
+    document.getElementById('detailEmail').innerText = data.email || '-';
+    document.getElementById('detailPhone').innerText = data.phone || '-';
+    document.getElementById('detailId').innerText = data.id || '-';
+    document.getElementById('detailSubmitDate').innerText = data.submitDate || '-';
+    document.getElementById('detailfromStops').innerText = data.fromStops?.map(s=>`${s.location} (${s.duration||'-'})`).join(", ") || 'No going stops';
+    document.getElementById('detailtoStops').innerText = data.toStops?.map(s=>`${s.location} (${s.duration||'-'})`).join(", ") || 'No return stops';
 
+    // Trip icon
+    const tripIconContainer = document.getElementById("tripIconContainer");
+    tripIconContainer.innerHTML = data.tripType==='oneway' ? '<i class="bi bi-arrow-up text-white text-2xl"></i>' :
+                                   data.tripType==='return'? '<i class="bi bi-arrow-down-up text-white text-2xl"></i>':'';
+
+    // Status & buttons
+    createStatusBadge(data.status);
+    toggleActionButtons(data.status==='Pending');
+    toggleDeleteRestoreButtons(data.status);
+
+    // Distance & Duration (async)
+    const distanceKm = await getDistance(data.pickup, data.destination);
+    document.getElementById("detailDistance").innerText = distanceKm !== '-' ? distanceKm+" km" : '-';
+    document.getElementById("detailDuration").innerText = calculateDurationByDistance(distanceKm);
+}
+
+// ======= DISTANCE FUNCTIONS (unchanged) =======
+async function getCoordinates(place){
+    try {
+        const res = await axios.get('https://nominatim.openstreetmap.org/search',{ params:{q:place,format:'json',limit:1}});
+        if(res.data.length>0) return {lat:res.data[0].lat, lon:res.data[0].lon};
+        return null;
+    } catch(err){ console.error(err); return null; }
+}
+
+async function getDistance(fromPlace, toPlace){
+    const fromCoords = await getCoordinates(fromPlace);
+    const toCoords = await getCoordinates(toPlace);
+    if(!fromCoords || !toCoords) return '-';
+    try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=false`;
+        const res = await axios.get(url);
+        if(res.data.code==="Ok" && res.data.routes.length>0){
+            return (res.data.routes[0].distance/1000).toFixed(2);
+        } else return '-';
+    } catch(err){ console.error(err); return '-'; }
+}
 </script>
-
 </body>
 </html>
